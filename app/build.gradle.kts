@@ -66,7 +66,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
-    implementation(libs.androidx.compose.material3.icons.extended)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
@@ -109,5 +109,6 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.compose.material3.windowSizeClass)
 
 }

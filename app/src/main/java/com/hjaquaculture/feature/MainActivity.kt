@@ -4,11 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.hjaquaculture.common.utils.NavAnimations
+import com.hjaquaculture.feature._temp.AdaptiveScreen
 import com.hjaquaculture.feature.account.LoginAction
 import com.hjaquaculture.feature.account.LoginScreen
 import com.hjaquaculture.feature.account.RegisterScreen
@@ -30,6 +32,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -49,17 +52,26 @@ fun AppNavigation() {
             LoginScreen(onAction = {action ->
                 when(action){
                     is LoginAction.GoToRegister -> navController.navigate(Register)
-                    is LoginAction.LoginSuccess -> navController.navigate(Home)
+                    is LoginAction.LoginSuccess -> navController.navigate(AdaptiveApp)
                 }
             })
         }
 
-        composable<Register>{
+        composable<Register>(
+            enterTransition = { NavAnimations.slideInFromBottom()},
+            exitTransition = { NavAnimations.slideOutToBottom() },
+            popEnterTransition = { NavAnimations.slideInFromBottom()},
+            popExitTransition = { NavAnimations.slideOutToBottom() },
+        ){
             RegisterScreen()
         }
 
         composable<Home> {
             HomeScreen()
+        }
+
+        composable<AdaptiveApp> {
+            AdaptiveScreen()
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.hjaquaculture.feature._temp
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -16,45 +17,82 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 // --- 顶部切换逻辑 ---
+// 外部使用windowSizeClass.widthSizeClass，获取屏幕大小
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun AdaptiveScreen(widthSizeClass: WindowWidthSizeClass) {
-    // 假设 Expanded 宽度类为大屏 (平板)
-    val isExpandedScreen = widthSizeClass == WindowWidthSizeClass.Expanded
-
-    // 状态提升：在顶层管理当前选中的项目ID
+fun AdaptiveScreen() {
+    // 1. 定义导航状态
+    var currentDestination by remember { mutableStateOf("list") }
+    // 2. 状态提升：管理选中的项目
     var selectedItemId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    if (isExpandedScreen) {
-        // 大屏：显示双面板布局
-        TwoPaneLayout(
-            selectedItemId = selectedItemId,
-            onItemSelected = { id -> selectedItemId = id }
-        )
-    } else {
-        // 小屏：显示单面板布局 (使用 Compose Navigation)
-        OnePaneLayout(
-            selectedItemId = selectedItemId,
-            onItemSelected = { id -> selectedItemId = id }
-        )
+    // 核心组件：自动处理手机底栏和平板侧边栏
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            // 定义导航项（例如：首页、设置）
+            item(
+                selected = currentDestination == "list",
+                onClick = { currentDestination = "list" },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text("列表") }
+            )
+            item(
+                selected = currentDestination == "settings",
+                onClick = { currentDestination = "settings" },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text("设置") }
+            )
+        }
+    ) {
+        // 3. 这里是内容区域
+        // 我们利用 WindowSizeClass 来决定内容区是“单面板”还是“双面板”
+        val windowSizeClass = calculateWindowSizeClass(LocalContext.current as Activity)
+
+        when (currentDestination) {
+            "list" -> {
+                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                    // 平板：直接显示双面板，不需要 NavHost
+                    TwoPaneLayout(
+                        selectedItemId = selectedItemId,
+                        onItemSelected = { selectedItemId = it }
+                    )
+                } else {
+                    // 手机：使用 NavHost 处理切换动画
+                    OnePaneLayout(
+                        selectedItemId = selectedItemId,
+                        onItemSelected = { selectedItemId = it }
+                    )
+                }
+            }
+            "settings" -> Text("设置页面")
+        }
     }
 }
 
