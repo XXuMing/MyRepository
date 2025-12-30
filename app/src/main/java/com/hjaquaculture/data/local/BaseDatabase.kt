@@ -4,13 +4,33 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.hjaquaculture.common.utils.Converters
 import com.hjaquaculture.data.local.dao.UserDao
-import com.hjaquaculture.data.local.model.UserEntity
+import com.hjaquaculture.data.local.model.entity.Customer
+import com.hjaquaculture.data.local.model.entity.OperationLogs
+import com.hjaquaculture.data.local.model.entity.Product
+import com.hjaquaculture.data.local.model.entity.ProductPriceHistory
+import com.hjaquaculture.data.local.model.entity.PurchaseBill
+import com.hjaquaculture.data.local.model.entity.PurchaseOrder
+import com.hjaquaculture.data.local.model.entity.PurchaseOrderItem
+import com.hjaquaculture.data.local.model.entity.PurchasePayment
+import com.hjaquaculture.data.local.model.entity.SaleInvoice
+import com.hjaquaculture.data.local.model.entity.SaleOrder
+import com.hjaquaculture.data.local.model.entity.SaleOrderItem
+import com.hjaquaculture.data.local.model.entity.SalePayment
+import com.hjaquaculture.data.local.model.entity.Supplier
+import com.hjaquaculture.data.local.model.entity.User
 
-@Database(entities = [UserEntity::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
+@Database(
+    entities = [
+        User::class, Customer::class, Supplier::class,
+        Product::class, ProductPriceHistory::class,
+        PurchaseOrder::class, PurchaseOrderItem::class,PurchaseBill::class, PurchasePayment::class,
+        SaleOrder::class, SaleOrderItem::class, SaleInvoice::class, SalePayment::class,
+        OperationLogs::class
+               ],
+    version = 1,
+    exportSchema = true
+)
 abstract class BaseDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao // 抽象方法，返回 DAO 实例
 

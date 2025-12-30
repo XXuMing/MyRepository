@@ -21,6 +21,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,26 +35,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.hjaquaculture.R
-import com.hjaquaculture.ui.theme.HJAquacultureTheme
+import com.hjaquaculture.feature.LoginAction
 
+/*
 @Composable
 @Preview(showBackground = true)
 fun LoginPreview(){
     HJAquacultureTheme() {
-        LoginScreen({})
+        LoginScreen(hiltViewModel(),{})
     }
 }
+*/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onAction: (LoginAction) -> Unit) {
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onAction: (LoginAction) -> Unit
+) {
     val titleColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val scope = rememberCoroutineScope()
-    var loginAccountName by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    val state by viewModel.uiState.collectAsState()
+
+    // 状态机监听：一旦状态变为 Success，触发导航 Action
+    LaunchedEffect(state.loginStatus) {
+        if (state.loginStatus is LoginStatus.Success) {
+            onAction(LoginAction.LoginSuccess)
+        }
+    }
+
 
     Scaffold(
         floatingActionButton = {
@@ -75,10 +91,11 @@ fun LoginScreen(onAction: (LoginAction) -> Unit) {
                 Text(text = "欢迎使用", color = titleColor , fontSize = 70.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = loginAccountName,
+                    value = state.username,
                     label = {Text("用户名")},
                     onValueChange = {
-                        loginAccountName = it },
+                        viewModel.onUsernameChanged(it)
+                    },
                     singleLine = true,
                     leadingIcon = {
                         Icon(Icons.Filled.AccountBox, "用户名")
@@ -132,15 +149,4 @@ fun PasswordTextField() {
             VisualTransformation.None
         }
     )
-}
-
-
-/*
-* 跳转密封类
-* */
-sealed class LoginAction {
-    object LoginSuccess : LoginAction()
-    object GoToRegister : LoginAction()
-    // 如果将来有带参数跳转，也可以这样写：
-    // data class GoToDetails(val id: String) : LoginAction()
 }

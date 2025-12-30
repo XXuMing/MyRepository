@@ -1,12 +1,11 @@
 package com.hjaquaculture.data.repository
 
 import com.hjaquaculture.data.local.dao.UserDao
-import com.hjaquaculture.data.local.model.UserEntity
+import com.hjaquaculture.data.local.model.entity.User
 import jakarta.inject.Inject
-import java.time.Instant
 
 class UserRepository @Inject constructor(
-    private val userDao: UserDao // 通过 Hilt 注入 DAO
+    private val userDao: UserDao
 ) {
     // 定义返回结果的密封类
     sealed class RegisterResult {
@@ -17,20 +16,33 @@ class UserRepository @Inject constructor(
 
     /**
      * 注册用户
-     * @param username 用户名
+     * @param account 用户名
      * @param passwordHash 密码的哈希值
      */
-    suspend fun registerUser(username: String, passwordHash: String): RegisterResult {
+    suspend fun registerUser(account: String, passwordHash: String): RegisterResult {
         return try {
-            val existingUser = userDao.getUserByUsername(username)
+            val existingUser = userDao.getUserByAccount(account)
             if (existingUser != null) {
                 RegisterResult.AlreadyExists
             } else {
-                userDao.insertUser(UserEntity(name = username, password = passwordHash, createdAt = Instant.now()))
+                userDao.insert(
+                    User(
+                        account = account,
+                        username = account,
+                        passwordHash = passwordHash
+                    )
+                )
                 RegisterResult.Success
             }
         } catch (e: Exception) {
             RegisterResult.Error(e.localizedMessage ?: "未知错误")
         }
+    }
+
+    /**
+     *
+     */
+    suspend fun login(username:String,passwordHash: String){
+
     }
 }

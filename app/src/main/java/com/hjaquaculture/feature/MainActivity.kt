@@ -6,13 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.hjaquaculture.common.utils.NavAnimations
 import com.hjaquaculture.feature._temp.AdaptiveScreen
-import com.hjaquaculture.feature.account.LoginAction
+import com.hjaquaculture.feature._temp.ThreePaneAdaptiveApp
 import com.hjaquaculture.feature.account.LoginScreen
+import com.hjaquaculture.feature.account.LoginViewModel
 import com.hjaquaculture.feature.account.RegisterScreen
 import com.hjaquaculture.feature.home.HomeScreen
 import com.hjaquaculture.ui.theme.HJAquacultureTheme
@@ -35,43 +40,56 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun AppNavigation() {
+
     val navController = rememberNavController()
+    val navigator = remember(navController) { ScreenRouteLogic(navController) }
+
     NavHost(
-
         navController = navController,
-        startDestination = Login,
-
+        startDestination = LoginRoute(initialUsername = null) ,
+        // 切换动画
         enterTransition = { NavAnimations.fadeEnter() },
         exitTransition = { NavAnimations.fadeExit() },
         popEnterTransition = { NavAnimations.fadeEnter() },
         popExitTransition = { NavAnimations.fadeExit() }
 
     ) {
-        //路由部分
-        composable<Login>{
-            LoginScreen(onAction = {action ->
-                when(action){
-                    is LoginAction.GoToRegister -> navController.navigate(Register)
-                    is LoginAction.LoginSuccess -> navController.navigate(AdaptiveApp)
+        composable<LoginRoute>{ backStackEntry ->
+            val viewModel: LoginViewModel = hiltViewModel()
+            val loginRoute = backStackEntry.toRoute<LoginRoute>()
+
+            // 确保在 ViewModel 创建或参数变化时，更新其内部状态
+            LaunchedEffect(loginRoute.initialUsername) {
+                loginRoute.initialUsername?.let {
+                    viewModel.onUsernameChanged(it)
                 }
-            })
+            }
+            LoginScreen(
+                onAction = { action -> navigator.handleLoginAction(action) }
+            )
         }
 
-        composable<Register>(
-            enterTransition = { NavAnimations.slideInFromBottom()},
+        composable<RegisterRoute>(
+            enterTransition = { NavAnimations.slideInFromBottom() },
             exitTransition = { NavAnimations.slideOutToBottom() },
-            popEnterTransition = { NavAnimations.slideInFromBottom()},
+            popEnterTransition = { NavAnimations.slideInFromBottom() },
             popExitTransition = { NavAnimations.slideOutToBottom() },
-        ){
-            RegisterScreen()
+        ){backStackEntry ->
+            RegisterScreen(
+                onAction = { action -> navigator.handleRegisterAction(action) }
+            )
         }
 
-        composable<Home> {
+        composable<HomeRoute> {backStackEntry ->
             HomeScreen()
         }
 
-        composable<AdaptiveApp> {
+        composable<AdaptiveAppRoute> {backStackEntry ->
             AdaptiveScreen()
+        }
+
+        composable<ThreePaneAdaptiveAppRoute> {backStackEntry ->
+            ThreePaneAdaptiveApp()
         }
     }
 }

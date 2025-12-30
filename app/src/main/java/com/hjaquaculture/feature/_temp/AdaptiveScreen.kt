@@ -1,5 +1,157 @@
 package com.hjaquaculture.feature._temp
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+@SuppressLint("ContextCastToActivity")
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Composable
+fun AdaptiveScreen() {
+    var currentNavDest by remember { mutableStateOf("list_route") }
+    var selectedItemId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // NavigationSuiteScaffold 自动处理：手机底栏 / 平板侧边栏
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            item(
+                selected = currentNavDest == "list_route",
+                onClick = { currentNavDest = "list_route" },
+                icon = { Icon(Icons.Default.List, null) },
+                label = { Text("列表") }
+            )
+            item(
+                selected = currentNavDest == "settings_route",
+                onClick = { currentNavDest = "settings_route" },
+                icon = { Icon(Icons.Default.Settings, null) },
+                label = { Text("设置") }
+            )
+        }
+    ) {
+
+        val windowSizeClass = calculateWindowSizeClass(LocalContext.current as Activity)
+        when (currentNavDest) {
+            "list_route" -> {
+                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                    // 大屏：双面板（无内部导航）
+                    TwoPaneContent(selectedItemId) { selectedItemId = it }
+                } else {
+                    // 小屏：单面板（带动画导航）
+                    OnePaneContent(selectedItemId) { selectedItemId = it }
+                }
+            }
+            "settings_route" -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("设置页面")
+            }
+        }
+    }
+}
+
+@Composable
+fun OnePaneContent(selectedItemId: String?, onSelect: (String) -> Unit) {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "list") {
+        composable("list") {
+            ListScreen { id ->
+                onSelect(id)
+                navController.navigate("detail")
+            }
+        }
+        composable(
+            route = "detail",
+            // 进入动画：从右往左进入
+            enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(400))
+            },
+            // 返回动画：向右滑出屏幕 (重点修正)
+            exitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(400))
+            },
+            // 列表页在返回时的动画：从左往右进入
+            popEnterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(400))
+            }
+        ) {
+            DetailScreen(itemId = selectedItemId ?: "", onBack = { navController.popBackStack() })
+        }
+    }
+}
+
+@Composable
+fun TwoPaneContent(selectedItemId: String?, onSelect: (String) -> Unit) {
+    Row(Modifier.fillMaxSize()) {
+        ListScreen(Modifier.weight(0.4f), onSelect)
+        Box(Modifier.weight(0.6f).fillMaxHeight().background(Color.LightGray), contentAlignment = Alignment.Center) {
+            if (selectedItemId != null) DetailScreen(selectedItemId) else Text("请选择一项")
+        }
+    }
+}
+
+// --- 通用 UI 组件 ---
+
+@Composable
+fun ListScreen(modifier: Modifier = Modifier, onItemSelected: (String) -> Unit) {
+    val items = listOf("项目 1", "项目 2", "项目 3")
+    LazyColumn(modifier.fillMaxSize()) {
+        items(items) { item ->
+            ListItem(
+                headlineContent = { Text(item) },
+                modifier = Modifier.clickable { onItemSelected(item) }
+            )
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(itemId: String, onBack: (() -> Unit)? = null) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        if (onBack != null) {
+            Button(onClick = onBack) { Text("返回") }
+        }
+        Text("详情: $itemId", style = MaterialTheme.typography.headlineMedium)
+        Text("这里是详细内容描述...")
+    }
+}
+/*
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -45,6 +197,7 @@ import androidx.navigation.compose.rememberNavController
 
 // --- 顶部切换逻辑 ---
 // 外部使用windowSizeClass.widthSizeClass，获取屏幕大小
+@SuppressLint("ContextCastToActivity")
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun AdaptiveScreen() {
@@ -260,3 +413,4 @@ fun DetailScreen(
         )
     }
 }
+*/

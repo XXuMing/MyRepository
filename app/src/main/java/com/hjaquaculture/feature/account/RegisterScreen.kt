@@ -23,31 +23,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
 import com.hjaquaculture.R
-import com.hjaquaculture.ui.theme.HJAquacultureTheme
+import com.hjaquaculture.feature.RegisterAction
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun RegisterPreview(){
     HJAquacultureTheme() {
-        RegisterScreen()
+        RegisterScreen(hiltViewModel(),{})
     }
 }
+
+ */
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = hiltViewModel()
+    viewModel: RegisterViewModel = hiltViewModel(),
+    onAction: (RegisterAction) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var accountName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rePassword by remember { mutableStateOf("") }
 
+    val navController = rememberNavController()
     val titleColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     var passwordVisibility by remember { mutableStateOf(false) }
 
@@ -65,14 +71,21 @@ fun RegisterScreen(
             //注册页面 用户名 文本框
             OutlinedTextField(
                 value = accountName, label = { Text("用户名") },
-                onValueChange = { accountName = it },
+                onValueChange = {
+                    accountName = it
+                    viewModel.onUsernameChanged(it)
+                },
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Filled.AccountBox, "用户名") }
             )
             //注册页面 密码 文本框
             OutlinedTextField(
                 value = password, label = { Text("密码") },
-                onValueChange = { password = it }, placeholder = { Text("ddd") },
+                onValueChange = {
+                    password = it
+                    viewModel.onPasswordChanged(it)
+                },
+                placeholder = { Text("6~32位,字母/数字/符号") },
                 singleLine = true,
                 leadingIcon = { Icon(painterResource(R.drawable.password_2_24px), "密码") },
                 trailingIcon = {
@@ -85,7 +98,11 @@ fun RegisterScreen(
             //注册页面 确认密码 文本框
             OutlinedTextField(
                 value = rePassword, label = { Text("确认密码") },
-                onValueChange = { rePassword = it },
+                onValueChange = {
+                    rePassword = it
+                    viewModel.onRePasswordChanged(it)
+                },
+                placeholder = { Text("6~32位,字母/数字/符号") },
                 singleLine = true,
                 leadingIcon = { Icon(painterResource(R.drawable.password_2_24px), "确认密码") }
             )
@@ -93,12 +110,27 @@ fun RegisterScreen(
 
             Button(
                 onClick = {
-                    viewModel.onRegisterClick(accountName,password,rePassword)
-
+                    viewModel.onRegisterClick()
                 },
-                enabled = state.isLoading
+                enabled = state.actionStatus !is RegisterStatus.Loading
             ) {
                 Text("注册", modifier = Modifier.padding(horizontal = 32.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            when (val status = state.actionStatus) {
+                is RegisterStatus.Loading -> {
+                    //CircularProgressIndicator() // 显示加载圈
+                }
+                is RegisterStatus.Error -> {
+                    Text(text = status.message, color = Color.Red) // 显示错误文案
+                }
+                is RegisterStatus.Success -> {
+                    LocalSoftwareKeyboardController.current?.hide()
+                    onAction(RegisterAction.RegisterSuccess(state.username))
+                }
+                RegisterStatus.Idle -> {
+                    // 闲置状态，可以显示提示语或者什么都不显示
+                }
             }
         }
     }
