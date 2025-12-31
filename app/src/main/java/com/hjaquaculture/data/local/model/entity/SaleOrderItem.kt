@@ -36,7 +36,8 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
-        Index(value = ["order_id"])
+        Index(value = ["order_id"]),
+        Index(value = ["product_id"])
     ]
 )
 data class SaleOrderItem(

@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.data.local.model.entity.status.InvoiceStatus
 
 /**
  * 销售发票
@@ -72,7 +73,7 @@ data class SaleInvoice(
     val amountPaid: Double,
 
     @ColumnInfo(name = "status")
-    val status: String,
+    val status: InvoiceStatus,
 
     @ColumnInfo(name = "remark")
     val remark: String,

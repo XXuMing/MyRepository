@@ -5,6 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.data.local.model.entity.status.PurchaseOrderStatus
+import com.hjaquaculture.data.local.model.entity.status.PurchaseOrderType
 
 /**
  * 采购订单
@@ -54,12 +56,11 @@ data class PurchaseOrder (
     @ColumnInfo(name = "user_id")
     val userId: Long,
 
-    //收寄件、自采购
     @ColumnInfo(name = "order_type")
-    val orderType: String,
+    val orderType: PurchaseOrderType,
 
     @ColumnInfo(name = "status")
-    val status: String,
+    val status: PurchaseOrderStatus,
 
     @ColumnInfo(name = "audited_at")
     val auditedAt: Long = 0,

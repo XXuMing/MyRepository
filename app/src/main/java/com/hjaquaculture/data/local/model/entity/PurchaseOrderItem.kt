@@ -36,7 +36,8 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
-        Index("order_id")
+        Index("order_id"),
+        Index("product_id")
     ]
 )
 data class PurchaseOrderItem (

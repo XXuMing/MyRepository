@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
     tableName = "purchase_payment",
     foreignKeys = [
         ForeignKey(
-            entity = PurchaseBill::class,
+            entity = PurchaseInvoice::class,
             parentColumns = ["id"],
             childColumns = ["bill_id"],
             onDelete = ForeignKey.NO_ACTION,

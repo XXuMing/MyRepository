@@ -4,12 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.hjaquaculture.data.local.dao.UserDao
 import com.hjaquaculture.data.local.model.entity.Customer
 import com.hjaquaculture.data.local.model.entity.OperationLogs
 import com.hjaquaculture.data.local.model.entity.Product
 import com.hjaquaculture.data.local.model.entity.ProductPriceHistory
-import com.hjaquaculture.data.local.model.entity.PurchaseBill
+import com.hjaquaculture.data.local.model.entity.PurchaseInvoice
 import com.hjaquaculture.data.local.model.entity.PurchaseOrder
 import com.hjaquaculture.data.local.model.entity.PurchaseOrderItem
 import com.hjaquaculture.data.local.model.entity.PurchasePayment
@@ -19,17 +20,25 @@ import com.hjaquaculture.data.local.model.entity.SaleOrderItem
 import com.hjaquaculture.data.local.model.entity.SalePayment
 import com.hjaquaculture.data.local.model.entity.Supplier
 import com.hjaquaculture.data.local.model.entity.User
+import com.hjaquaculture.data.local.model.entity.status.InvoiceStatusConverter
+import com.hjaquaculture.data.local.model.entity.status.PurchaseOrderConverter
+import com.hjaquaculture.data.local.model.entity.status.SaleOrderConverter
 
 @Database(
     entities = [
         User::class, Customer::class, Supplier::class,
         Product::class, ProductPriceHistory::class,
-        PurchaseOrder::class, PurchaseOrderItem::class,PurchaseBill::class, PurchasePayment::class,
+        PurchaseOrder::class, PurchaseOrderItem::class,PurchaseInvoice::class, PurchasePayment::class,
         SaleOrder::class, SaleOrderItem::class, SaleInvoice::class, SalePayment::class,
         OperationLogs::class
                ],
     version = 1,
     exportSchema = true
+)
+@TypeConverters(
+    InvoiceStatusConverter::class,
+    PurchaseOrderConverter::class,
+    SaleOrderConverter::class
 )
 abstract class BaseDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao // 抽象方法，返回 DAO 实例
@@ -39,7 +48,7 @@ abstract class BaseDatabase : RoomDatabase() {
         private var INSTANCE: BaseDatabase? = null
 
         fun getDB(context: Context): BaseDatabase {
-            var dataBaseName = "HJA_database"
+            val dataBaseName = "HJA_database"
             // 如果 INSTANCE 不为空，直接返回；
             // 如果为空，则同步锁创建数据库
             return INSTANCE ?: synchronized(this) {

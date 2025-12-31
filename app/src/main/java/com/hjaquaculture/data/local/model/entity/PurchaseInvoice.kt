@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.data.local.model.entity.status.InvoiceStatus
 
 /**
  * 采购账单
@@ -19,7 +20,7 @@ import androidx.room.PrimaryKey
  * @param createdAt 创建时间
  */
 @Entity(
-    tableName = "purchase_bill",
+    tableName = "purchase_invoice",
     foreignKeys = [
         ForeignKey(
             entity = PurchaseOrder::class,
@@ -51,7 +52,7 @@ import androidx.room.PrimaryKey
         Index("created_at")
     ]
 )
-data class PurchaseBill (
+data class PurchaseInvoice (
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
@@ -71,7 +72,7 @@ data class PurchaseBill (
     val amountPaid: Double,
 
     @ColumnInfo(name = "status")
-    val status: String,
+    val status: InvoiceStatus,
 
     @ColumnInfo(name = "remark")
     val remark: String,

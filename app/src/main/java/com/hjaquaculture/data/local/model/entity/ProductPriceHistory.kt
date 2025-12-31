@@ -5,16 +5,19 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * 商品价格历史记录
  * @param id 主键
+ * @param priceDate 价格日期
  * @param productId 商品ID
  * @param userId 用户ID
  * @param originalPrice 原价
  * @param newPrice 新价
  * @param remark 备注
- * @param createdAt 创建时间
  */
 @Entity(
     tableName = "product_price_history",
@@ -30,7 +33,11 @@ import androidx.room.PrimaryKey
             childColumns = ["user_id"]
         )
     ],
-    indices = [Index("product_id"), Index("user_id"),Index("created_at")]
+    indices = [
+        Index(value = ["price_date", "product_id"], unique = true),
+        Index(value = ["product_id"]),
+        Index(value = ["user_id"])
+    ]
 )
 data class ProductPriceHistory (
     @PrimaryKey(autoGenerate = true)
@@ -52,6 +59,6 @@ data class ProductPriceHistory (
 
     val remark: String? = null,
 
-    @ColumnInfo(name = "created_at")
-    val createdAt : Long = System.currentTimeMillis()
+    @ColumnInfo(name = "price_date")
+    val priceDate : String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 )

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "29f058d4f21ed44e21720687914726eb",
+    "identityHash": "3026ceda64dc5a5146af48fef9eee63e",
     "entities": [
       {
         "tableName": "user",
@@ -281,7 +281,7 @@
       },
       {
         "tableName": "product_price_history",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `product_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `original_price` INTEGER NOT NULL, `new_price` INTEGER NOT NULL, `remark` TEXT, `created_at` INTEGER NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `product_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `original_price` INTEGER NOT NULL, `new_price` INTEGER NOT NULL, `remark` TEXT, `price_date` TEXT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -319,9 +319,9 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
-            "affinity": "INTEGER",
+            "fieldPath": "priceDate",
+            "columnName": "price_date",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -332,6 +332,16 @@
           ]
         },
         "indices": [
+          {
+            "name": "index_product_price_history_price_date_product_id",
+            "unique": true,
+            "columnNames": [
+              "price_date",
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_product_price_history_price_date_product_id` ON `${TABLE_NAME}` (`price_date`, `product_id`)"
+          },
           {
             "name": "index_product_price_history_product_id",
             "unique": false,
@@ -349,15 +359,6 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_product_price_history_user_id` ON `${TABLE_NAME}` (`user_id`)"
-          },
-          {
-            "name": "index_product_price_history_created_at",
-            "unique": false,
-            "columnNames": [
-              "created_at"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_product_price_history_created_at` ON `${TABLE_NAME}` (`created_at`)"
           }
         ],
         "foreignKeys": [
@@ -387,7 +388,7 @@
       },
       {
         "tableName": "purchase_order",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `supplier_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `audited_at` INTEGER NOT NULL, `remark` TEXT NOT NULL, `order_date` INTEGER NOT NULL, FOREIGN KEY(`supplier_id`) REFERENCES `supplier`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `supplier_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `order_type` INTEGER NOT NULL, `status` INTEGER NOT NULL, `audited_at` INTEGER NOT NULL, `remark` TEXT NOT NULL, `order_date` INTEGER NOT NULL, FOREIGN KEY(`supplier_id`) REFERENCES `supplier`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -410,13 +411,13 @@
           {
             "fieldPath": "orderType",
             "columnName": "order_type",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "status",
             "columnName": "status",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -584,6 +585,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_order_Item_order_id` ON `${TABLE_NAME}` (`order_id`)"
+          },
+          {
+            "name": "index_order_Item_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_order_Item_product_id` ON `${TABLE_NAME}` (`product_id`)"
           }
         ],
         "foreignKeys": [
@@ -612,8 +622,8 @@
         ]
       },
       {
-        "tableName": "purchase_bill",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `purchase_id` INTEGER NOT NULL, `supplier_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `amount_payable` REAL NOT NULL, `amount_paid` REAL NOT NULL, `status` TEXT NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, FOREIGN KEY(`purchase_id`) REFERENCES `purchase_order`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`supplier_id`) REFERENCES `supplier`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "tableName": "purchase_invoice",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `purchase_id` INTEGER NOT NULL, `supplier_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `amount_payable` REAL NOT NULL, `amount_paid` REAL NOT NULL, `status` INTEGER NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, FOREIGN KEY(`purchase_id`) REFERENCES `purchase_order`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`supplier_id`) REFERENCES `supplier`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -654,7 +664,7 @@
           {
             "fieldPath": "status",
             "columnName": "status",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -678,49 +688,49 @@
         },
         "indices": [
           {
-            "name": "index_purchase_bill_purchase_id",
+            "name": "index_purchase_invoice_purchase_id",
             "unique": false,
             "columnNames": [
               "purchase_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_bill_purchase_id` ON `${TABLE_NAME}` (`purchase_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_invoice_purchase_id` ON `${TABLE_NAME}` (`purchase_id`)"
           },
           {
-            "name": "index_purchase_bill_supplier_id",
+            "name": "index_purchase_invoice_supplier_id",
             "unique": false,
             "columnNames": [
               "supplier_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_bill_supplier_id` ON `${TABLE_NAME}` (`supplier_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_invoice_supplier_id` ON `${TABLE_NAME}` (`supplier_id`)"
           },
           {
-            "name": "index_purchase_bill_user_id",
+            "name": "index_purchase_invoice_user_id",
             "unique": false,
             "columnNames": [
               "user_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_bill_user_id` ON `${TABLE_NAME}` (`user_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_invoice_user_id` ON `${TABLE_NAME}` (`user_id`)"
           },
           {
-            "name": "index_purchase_bill_status",
+            "name": "index_purchase_invoice_status",
             "unique": false,
             "columnNames": [
               "status"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_bill_status` ON `${TABLE_NAME}` (`status`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_invoice_status` ON `${TABLE_NAME}` (`status`)"
           },
           {
-            "name": "index_purchase_bill_created_at",
+            "name": "index_purchase_invoice_created_at",
             "unique": false,
             "columnNames": [
               "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_bill_created_at` ON `${TABLE_NAME}` (`created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchase_invoice_created_at` ON `${TABLE_NAME}` (`created_at`)"
           }
         ],
         "foreignKeys": [
@@ -761,7 +771,7 @@
       },
       {
         "tableName": "purchase_payment",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bill_id` INTEGER NOT NULL, `supplier_id` INTEGER NOT NULL, `amount` REAL NOT NULL, `payment_time` INTEGER NOT NULL, FOREIGN KEY(`bill_id`) REFERENCES `purchase_bill`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bill_id` INTEGER NOT NULL, `supplier_id` INTEGER NOT NULL, `amount` REAL NOT NULL, `payment_time` INTEGER NOT NULL, FOREIGN KEY(`bill_id`) REFERENCES `purchase_invoice`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -831,7 +841,7 @@
         ],
         "foreignKeys": [
           {
-            "table": "purchase_bill",
+            "table": "purchase_invoice",
             "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -845,7 +855,7 @@
       },
       {
         "tableName": "sale_order",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `user_id` INTEGER NOT NULL, `customer_id` INTEGER NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`customer_id`) REFERENCES `customer`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `user_id` INTEGER NOT NULL, `customer_id` INTEGER NOT NULL, `order_type` INTEGER NOT NULL, `status` INTEGER NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `processing_date` TEXT NOT NULL, FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`customer_id`) REFERENCES `customer`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -868,13 +878,13 @@
           {
             "fieldPath": "orderType",
             "columnName": "order_type",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "status",
             "columnName": "status",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -887,6 +897,12 @@
             "fieldPath": "createdAt",
             "columnName": "created_at",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "processingDate",
+            "columnName": "processing_date",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -916,24 +932,6 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_customer_id` ON `${TABLE_NAME}` (`customer_id`)"
           },
           {
-            "name": "index_sale_order_order_type",
-            "unique": false,
-            "columnNames": [
-              "order_type"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_order_type` ON `${TABLE_NAME}` (`order_type`)"
-          },
-          {
-            "name": "index_sale_order_status",
-            "unique": false,
-            "columnNames": [
-              "status"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_status` ON `${TABLE_NAME}` (`status`)"
-          },
-          {
             "name": "index_sale_order_created_at",
             "unique": false,
             "columnNames": [
@@ -941,6 +939,25 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_created_at` ON `${TABLE_NAME}` (`created_at`)"
+          },
+          {
+            "name": "index_sale_order_processing_date",
+            "unique": false,
+            "columnNames": [
+              "processing_date"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_processing_date` ON `${TABLE_NAME}` (`processing_date`)"
+          },
+          {
+            "name": "index_sale_order_order_type_status",
+            "unique": false,
+            "columnNames": [
+              "order_type",
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_order_type_status` ON `${TABLE_NAME}` (`order_type`, `status`)"
           }
         ],
         "foreignKeys": [
@@ -1030,6 +1047,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_item_order_id` ON `${TABLE_NAME}` (`order_id`)"
+          },
+          {
+            "name": "index_sale_order_item_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_order_item_product_id` ON `${TABLE_NAME}` (`product_id`)"
           }
         ],
         "foreignKeys": [
@@ -1059,7 +1085,7 @@
       },
       {
         "tableName": "sale_invoice",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `order_id` INTEGER NOT NULL, `customer_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `amount_due` REAL NOT NULL, `amount_paid` REAL NOT NULL, `status` TEXT NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, FOREIGN KEY(`order_id`) REFERENCES `sale_order`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`customer_id`) REFERENCES `customer`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `order_id` INTEGER NOT NULL, `customer_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `amount_due` REAL NOT NULL, `amount_paid` REAL NOT NULL, `status` INTEGER NOT NULL, `remark` TEXT NOT NULL, `created_at` INTEGER NOT NULL, FOREIGN KEY(`order_id`) REFERENCES `sale_order`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`customer_id`) REFERENCES `customer`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -1100,7 +1126,7 @@
           {
             "fieldPath": "status",
             "columnName": "status",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -1376,7 +1402,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '29f058d4f21ed44e21720687914726eb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3026ceda64dc5a5146af48fef9eee63e')"
     ]
   }
 }

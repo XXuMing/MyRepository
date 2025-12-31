@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -32,8 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.hjaquaculture.R
 import com.hjaquaculture.feature.RegisterAction
+import com.hjaquaculture.ui.theme.HJAquacultureTheme
 
-/*
 @Preview(showBackground = true)
 @Composable
 fun RegisterPreview(){
@@ -41,8 +42,6 @@ fun RegisterPreview(){
         RegisterScreen(hiltViewModel(),{})
     }
 }
-
- */
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel(),
@@ -87,7 +86,7 @@ fun RegisterScreen(
                 },
                 placeholder = { Text("6~32位,字母/数字/符号") },
                 singleLine = true,
-                leadingIcon = { Icon(painterResource(R.drawable.password_2_24px), "密码") },
+                leadingIcon = { Icon(painterResource(R.drawable.lock_24px), "密码") },
                 trailingIcon = {
                     if (passwordVisibility)
                         Icon(painterResource(R.drawable.visibility_24px), "显示密码")
@@ -104,7 +103,7 @@ fun RegisterScreen(
                 },
                 placeholder = { Text("6~32位,字母/数字/符号") },
                 singleLine = true,
-                leadingIcon = { Icon(painterResource(R.drawable.password_2_24px), "确认密码") }
+                leadingIcon = { Icon(painterResource(R.drawable.lock_24px), "确认密码") }
             )
             Spacer(modifier = Modifier.height(16.dp))
 

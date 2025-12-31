@@ -5,6 +5,11 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.data.local.model.entity.status.SaleOrderStatus
+import com.hjaquaculture.data.local.model.entity.status.SaleOrderType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * 销售订单
@@ -15,6 +20,8 @@ import androidx.room.PrimaryKey
  * @param status 订单状态（未付、已付、取消、待处理、已处理未付）
  * @param remark 备注
  * @param createdAt 创建时间
+ * @param processingDate 处理时间
+ *
  */
 @Entity(
     tableName = "sale_order",
@@ -30,12 +37,14 @@ import androidx.room.PrimaryKey
             childColumns = ["customer_id"]
         )
     ],
-    indices = [
+    indices = [//后期想想能不能优化一下这里的索引
         Index(value = ["user_id"]),
         Index(value = ["customer_id"]),
-        Index(value = ["order_type"]),
-        Index(value = ["status"]),
-        Index(value = ["created_at"])
+        //Index(value = ["order_type"]),
+        //Index(value = ["status"]),
+        Index(value = ["created_at"]),
+        Index(value = ["processing_date"]),
+        Index(value = ["order_type", "status"])
     ]
 )
 data class SaleOrder (
@@ -48,18 +57,30 @@ data class SaleOrder (
     @ColumnInfo(name = "customer_id")
     val customerId: Long = 0,
 
-    // 寄货单、自提单
     @ColumnInfo(name = "order_type")
-    val orderType: String,
+    val orderType: SaleOrderType,
 
-    //未付清、已付清、取消、待处理
     @ColumnInfo(name = "status")
-    val status: String,
+    var status: SaleOrderStatus,
 
     @ColumnInfo(name = "remark")
     val remark: String,
 
     @ColumnInfo(name = "created_at")
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "processing_date")
+    val processingDate : String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
 )
+
+
+/*
+// 在 ViewModel 或 UI 中处理 订单类型的 逻辑
+when (order.status) {
+    OrderStatus.PICKUP_UNPAID -> showPayButton()
+    OrderStatus.SHIPPING_UNPAID_PROCESSED -> showLogisticsInfo()
+    OrderStatus.CANCELLED -> showReorderButton()
+    else -> hideAllButtons()
+}
+*/

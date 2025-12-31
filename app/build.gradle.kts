@@ -103,8 +103,8 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     testImplementation(libs.androidx.paging.common) // 用于测试
     // 按需引用其他可选模块
-    // implementation(libs.androidx.paging.rxjava2)
-    // implementation(libs.androidx.paging.compose)
+     //implementation(libs.androidx.paging.rxjava2)
+     implementation(libs.androidx.paging.compose)
 
     // Hilt
     implementation(libs.hilt.android)

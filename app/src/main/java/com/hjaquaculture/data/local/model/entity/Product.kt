@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
  * @param id 主键
  * @param name 商品名
  * @param currentPrice 当前价格
- * @param category 分类
+ * @param category 分类//这个还要想想怎么处理
  * @param sort 排序
  */
 @Entity(

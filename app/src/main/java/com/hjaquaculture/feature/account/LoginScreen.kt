@@ -35,13 +35,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.hjaquaculture.R
 import com.hjaquaculture.feature.LoginAction
+import com.hjaquaculture.ui.theme.HJAquacultureTheme
 
-/*
 @Composable
 @Preview(showBackground = true)
 fun LoginPreview(){
@@ -49,7 +50,7 @@ fun LoginPreview(){
         LoginScreen(hiltViewModel(),{})
     }
 }
-*/
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -60,15 +61,17 @@ fun LoginScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    var text by remember { mutableStateOf("") }
+    var passwordVisibility by remember { mutableStateOf(false) }
+
     val state by viewModel.uiState.collectAsState()
 
     // 状态机监听：一旦状态变为 Success，触发导航 Action
     LaunchedEffect(state.loginStatus) {
-        if (state.loginStatus is LoginStatus.Success) {
+        if (state.loginStatus is LoginStatus.LoginSuccess) {
             onAction(LoginAction.LoginSuccess)
         }
     }
-
 
     Scaffold(
         floatingActionButton = {
@@ -91,7 +94,7 @@ fun LoginScreen(
                 Text(text = "欢迎使用", color = titleColor , fontSize = 70.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = state.username,
+                    value = state.account,
                     label = {Text("用户名")},
                     onValueChange = {
                         viewModel.onUsernameChanged(it)
@@ -101,7 +104,36 @@ fun LoginScreen(
                         Icon(Icons.Filled.AccountBox, "用户名")
                     }
                 )
-                PasswordTextField()
+
+
+                OutlinedTextField(
+                    value = state.password, label = {Text("密码")},
+                    onValueChange = {
+                        viewModel.onPasswordChanged(it)
+                    },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            painterResource(R.drawable.lock_24px),
+                            "密码"
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisibility = !passwordVisibility })
+                        {
+                            if (passwordVisibility)
+                                Icon(painterResource(R.drawable.visibility_24px),"显示密码")
+                            else
+                                Icon(painterResource(R.drawable.visibility_off_24px), "显示密码")
+                        }
+                    },
+                    visualTransformation = if (passwordVisibility) {
+                        PasswordVisualTransformation()
+                    } else {
+                        VisualTransformation.None
+                    }
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { onAction(LoginAction.LoginSuccess) })
@@ -112,41 +144,4 @@ fun LoginScreen(
         }
     }
 
-}
-
-/**
- * 密码输入框
- */
-@Composable
-fun PasswordTextField() {
-    var text by remember { mutableStateOf("") }
-    var passwordVisibility by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = text , label = {Text("密码")},
-        onValueChange = {
-            text = it
-        },
-        singleLine = true,
-        leadingIcon = {
-            Icon(
-                painterResource(R.drawable.password_2_24px),
-                "密码"
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = { passwordVisibility = !passwordVisibility })
-            {
-                if (passwordVisibility)
-                    Icon(painterResource(R.drawable.visibility_24px),"显示密码")
-                else
-                    Icon(painterResource(R.drawable.visibility_off_24px), "显示密码")
-            }
-        },
-        visualTransformation = if (passwordVisibility) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        }
-    )
 }

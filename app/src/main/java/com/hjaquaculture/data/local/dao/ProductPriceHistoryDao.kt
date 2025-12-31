@@ -22,6 +22,11 @@ interface ProductPriceHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(priceHistories: List<ProductPriceHistory>)
 
+    // 使用 OnConflictStrategy.REPLACE
+    // 如果日期和商品ID冲突了，Room会自动覆盖旧价格，实现“每日最新价”
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdatePrice(priceHistory: ProductPriceHistory)
+
     @Update
     suspend fun update(priceHistory: ProductPriceHistory)
 
