@@ -21,65 +21,61 @@ class ProductViewModel @Inject constructor(
     private val repository: ProductRepository
 ) : ViewModel() {
 
-    // 存储已加载的商品数据
     private val _loadedProducts = MutableStateFlow<Map<Long, List<Product>>>(emptyMap())
-
-    // 当前展开的分类ID
     private val _expandedId = MutableStateFlow<Long?>(null)
 
     // 专门存放“新创建、未保存”分类的流
     private val _tempNewCategories = MutableStateFlow<List<CategoryWithProductsVO>>(emptyList())
 
-    // 增加：用于在拖拽过程中保持 UI 顺序的 ID 列表流
+    // 用于在拖拽过程中保持 UI 顺序的 ID 列表流
     private val _reorderSortOrder = MutableStateFlow<List<Long>>(emptyList())
 
-    // 用于管理拖拽排序的防抖 Job
-    private var reorderJob: kotlinx.coroutines.Job? = null
+    val uiState: StateFlow<List<CategoryWithProductsVO>> = combine(
+        repository.getAllCategories(),
+        _tempNewCategories,
+        _expandedId,
+        _reorderSortOrder
+    ) { dbCategories, tempList, expandedId, reorderOrder ->
+        // 1. 将数据库分类转换为 VO
+        val dbVOs = dbCategories.map { category ->
+            CategoryWithProductsVO(
+                category = category,
+                isExpanded = category.id == expandedId,
+                isInitialEditing = false
+            )
+        }
+// 1. 确保 tempList 在前面
+        val combinedList = (tempList + dbVOs).distinctBy { it.category.id }
 
-    // 将数据库的 Map 转换为 UI 需要的 List
-    private var _uiState: StateFlow<List<CategoryWithProductsVO>> =
-        combine(
-            repository.getAllCategories(),
-            _tempNewCategories,
-            _expandedId,
-            _reorderSortOrder
-        ) { dbCategories, tempList, expandedId, reorderOrder ->
-            // 1. 将数据库分类转换为 VO
-            val dbVOs = dbCategories.map { category ->
-                CategoryWithProductsVO(
-                    category = category,
-                    isExpanded = category.id == expandedId,
-                    isInitialEditing = false
-                )
-            }
+        // 2. 优化排序逻辑
+        if (reorderOrder.isNotEmpty()) {
+            combinedList.sortedWith(compareBy<CategoryWithProductsVO> { vo ->
+                // 【核心修复】：如果是临时项（isInitialEditing 为 true），排在第一优先级
+                if (vo.isInitialEditing) -1 else 0
+            }.thenBy { vo ->
+                // 第二优先级：遵循手动排序
+                val index = reorderOrder.indexOf(vo.category.id)
+                if (index != -1) index else Int.MAX_VALUE
+            })
+        } else {
+            // 默认排序：临时项在前，数据库项按 sort
+            combinedList.sortedWith(compareBy<CategoryWithProductsVO> { !it.isInitialEditing }
+                .thenBy { it.category.sort })
+        }
+    }.combine(_loadedProducts) { currentVOs, productsMap ->
+        currentVOs.map { vo ->
+            val hasData = productsMap.containsKey(vo.category.id)
+            vo.copy(
+                products = productsMap[vo.category.id] ?: emptyList(),
+                isLoadingProducts = vo.isExpanded && !hasData
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-            // 2. 去重合并：确保全局 ID 唯一
-            val combinedList = (tempList + dbVOs).distinctBy { it.category.id }
-
-            // 3. 排序逻辑
-            if (reorderOrder.isNotEmpty()) {
-                // 如果正在拖拽或刚刚拖拽完，优先按手动排序的 ID 顺序排列，防止 UI 闪跳
-                combinedList.sortedBy { reorderOrder.indexOf(it.category.id) }
-            } else {
-                // 默认按数据库的 sort 字段排序
-                combinedList.sortedBy { it.category.sort }
-            }
-        }.combine(_loadedProducts) { currentVOs, productsMap ->
-            currentVOs.map { vo ->
-                val hasData = productsMap.containsKey(vo.category.id)
-                vo.copy(
-                    products = productsMap[vo.category.id] ?: emptyList(),
-                    isLoadingProducts = vo.isExpanded && !hasData
-                )
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val uiState: StateFlow<List<CategoryWithProductsVO>> = _uiState
 
     fun toggleCategory(categoryId: Long) {
         val nextId = if (_expandedId.value == categoryId) null else categoryId
         _expandedId.value = nextId
-
         if (nextId != null && !_loadedProducts.value.containsKey(categoryId)) {
             loadProductsForCategory(categoryId)
         }
@@ -98,6 +94,7 @@ class ProductViewModel @Inject constructor(
         }
     }
 
+    // 保存新分类
     fun saveCategory(tempId: Long, finalName: String) {
         if (finalName.isBlank()) {
             _tempNewCategories.update { list -> list.filter { it.category.id != tempId } }
@@ -105,43 +102,54 @@ class ProductViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            // 获取当前数据库中最小的 sort 值
+            val currentCategories = uiState.value
+            val minSort = currentCategories.minOfOrNull { it.category.sort } ?: 0
+
             _tempNewCategories.update { list -> list.filter { it.category.id != tempId } }
-            repository.addCategory(ProductCategory(name = finalName))
-            // 保存新项后清空排序缓存，交还给数据库驱动
+
+            // 为了让它在最前面，新项的 sort 应该比当前最小的还要小
+            // 或者更简单的做法：插入后统一调用一次 syncOrderToDb 重新刷一遍 index
+            repository.addCategory(ProductCategory(name = finalName, sort = minSort - 1))
+
             _reorderSortOrder.value = emptyList()
+
+            // 强烈建议：保存后重新对数据库所有项进行一次 sort 归一化（0, 1, 2...）
+            // 这样可以防止 sort 变成极小的负数
+            syncOrderToDb()
         }
     }
 
+    // 新增分类：临时置于列表首位
     fun addNewCategory() {
+        // 使用负数 ID 或大时间戳标记临时项
         val tempId = System.currentTimeMillis()
         val newCategory = CategoryWithProductsVO(
-            category = ProductCategory(id = tempId, name = ""),
+            category = ProductCategory(id = tempId, name = "", sort = -1), // 给予最小 sort 预设
             isInitialEditing = true
         )
-        _tempNewCategories.value = listOf(newCategory) + _tempNewCategories.value
+        // 核心修改：确保它在临时列表的首位
+        _tempNewCategories.update { listOf(newCategory) + it }
     }
-    // 1. 内存移动：仅在拖拽过程中由 UI 频繁调用，不涉及数据库
+
     fun moveCategory(fromIndex: Int, toIndex: Int) {
-        val currentList = _uiState.value.toMutableList()
+        val currentList = uiState.value.toMutableList()
         if (fromIndex !in currentList.indices || toIndex !in currentList.indices) return
 
         val movedItem = currentList.removeAt(fromIndex)
         currentList.add(toIndex, movedItem)
 
-        // 核心：只更新 ID 顺序流，让 UI 跟着动
         _reorderSortOrder.value = currentList.map { it.category.id }
     }
 
-    // 2. 同步到数据库：这个函数只在“松手”瞬间调用一次
     fun syncOrderToDb() {
-        val currentList = _uiState.value
+        val currentList = uiState.value
         viewModelScope.launch(Dispatchers.IO) {
+            // 重新计算所有项的 sort 顺序，0 为最顶端
             val updatedEntities = currentList.mapIndexed { index, vo ->
                 vo.category.copy(sort = index)
             }
             repository.updateCategoriesOrder(updatedEntities)
-            // 写入成功后可以考虑清空 reorderOrder，让数据库 Flow 接管顺序
-            // _reorderSortOrder.value = emptyList()
         }
     }
 }

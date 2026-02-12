@@ -57,6 +57,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +76,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.hjaquaculture.data.local.entity.Product
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -87,6 +90,7 @@ fun ProductScreen(
     val categories by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         viewModel.moveCategory(from.index, to.index)
@@ -99,7 +103,6 @@ fun ProductScreen(
     }
 
     Scaffold(
-        // 全局点击监听：点击空白处清除焦点，从而触发 EditableText 的保存逻辑
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = { focusManager.clearFocus() })
         },
@@ -109,13 +112,33 @@ fun ProductScreen(
                     Icon(Icons.Filled.AddCard, contentDescription = null)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                FloatingActionButton(onClick = { viewModel.addNewCategory() }) {
+                FloatingActionButton(onClick = {
+                    // 1. 彻底清除现有焦点，防止键盘在不该出现的时候干扰计算
+                    focusManager.clearFocus()
+
+                    scope.launch {
+                        // 2. 第一步：先将现有列表滚到顶（此时新项还没出，干扰最少）
+                        lazyListState.animateScrollToItem(0)
+
+                        // 3. 第二步：添加新分类（此时会触发 UI 刷新，新项出现在 index 0）
+                        viewModel.addNewCategory()
+
+                        // 4. 第三步：关键延迟
+                        // 给 Compose 几毫秒时间去测量新加入的那个 Item 的高度
+                        // 也给键盘弹起留出一定的缓冲时间
+                        delay(100)
+
+                        // 5. 第四步：最终纠偏
+                        // 此时 index 0 已经是那个带输入框的新卡片了，再次强制置顶
+                        lazyListState.animateScrollToItem(0)
+                    }
+                }) {
                     Icon(Icons.Filled.Add, contentDescription = null)
                 }
             }
         }
     ) { paddingValues ->
-        Column{
+        Column(modifier = Modifier.padding(paddingValues)) {
             OutlinedTextField(
                 value = "",
                 onValueChange = { },
@@ -141,15 +164,21 @@ fun ProductScreen(
                             state = item,
                             modifier = Modifier
                                 .shadow(elevation)
-                                .draggableHandle()
+                                .longPressDraggableHandle()
                                 .clickable {
                                     focusManager.clearFocus()
                                     viewModel.toggleCategory(item.category.id)
                                 },
                             onProductClick = { /* TODO: 跳转商品详情 */ },
                             onSaveName = { newName ->
-                                if (item.isInitialEditing) {
+                                val isInitial = item.isInitialEditing
+                                if (isInitial) {
                                     viewModel.saveCategory(item.category.id, newName)
+                                    // 重点修复：保存新分类后，自动滚动到顶端
+                                    scope.launch {
+                                        delay(150) // 等待数据库写入和 UI 重排完成
+                                        lazyListState.animateScrollToItem(0)
+                                    }
                                 } else {
                                     viewModel.saveCategoryName(item.category.id, newName)
                                 }
@@ -248,19 +277,17 @@ fun EditableText(
     autoFocus: Boolean = false,
     onConfirm: (String) -> Unit
 ) {
-    // 状态管理
     var isEditing by remember { mutableStateOf(autoFocus) }
     var textValue by remember { mutableStateOf(TextFieldValue(initialText)) }
-
     val focusManager = LocalFocusManager.current
 
-    // 定义统一的提交逻辑
     fun handleConfirm() {
-        isEditing = false
-        onConfirm(textValue.text)
+        if (isEditing) {
+            isEditing = false
+            onConfirm(textValue.text)
+        }
     }
 
-    // 拦截点击事件，防止穿透到外层导致折叠
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -271,9 +298,7 @@ fun EditableText(
     ) {
         AnimatedContent(targetState = isEditing, label = "EditTransition") { editing ->
             if (editing) {
-                // 进入编辑模式的作用域
                 val focusRequester = remember { FocusRequester() }
-                // [关键修复]：增加一个标志位，确保只有获得过焦点后的失去焦点才算数
                 var hasGainedFocus by remember { mutableStateOf(false) }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -288,11 +313,9 @@ fun EditableText(
                             .widthIn(min = 50.dp, max = 150.dp)
                             .focusRequester(focusRequester)
                             .onFocusChanged { focusState ->
-                                // [关键修复逻辑]
                                 if (focusState.isFocused) {
                                     hasGainedFocus = true
                                 } else if (hasGainedFocus) {
-                                    // 只有当曾经获得过焦点(hasGainedFocus=true)，现在又失去焦点时，才保存
                                     handleConfirm()
                                 }
                             },
@@ -301,7 +324,7 @@ fun EditableText(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 handleConfirm()
-                                focusManager.clearFocus() // 收起键盘
+                                focusManager.clearFocus()
                             }
                         )
                     )
@@ -312,10 +335,8 @@ fun EditableText(
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
 
-                    // 自动请求焦点
                     LaunchedEffect(Unit) {
                         focusRequester.requestFocus()
-                        // 设置光标到末尾
                         textValue = textValue.copy(selection = TextRange(textValue.text.length))
                     }
                 }
