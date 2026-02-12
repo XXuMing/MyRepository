@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.PurchaseInvoice
+import com.hjaquaculture.data.local.entity.PurchaseInvoice
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -17,40 +17,80 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PurchaseInvoiceDao {
 
+    // --- 增加 (Create) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(bill: PurchaseInvoice): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(bills: List<PurchaseInvoice>)
+    suspend fun insertAll(bills: List<PurchaseInvoice>): List<Long>
 
-    @Update
-    suspend fun update(bill: PurchaseInvoice)
+    // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(bill: PurchaseInvoice)
+    suspend fun delete(bill: PurchaseInvoice): Int
+
+    @Query("DELETE FROM purchase_invoice WHERE id = :id")
+    suspend fun deleteById(id: Long): Int
+
+    @Query("DELETE FROM purchase_invoice WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>): Int
+
+    @Query("DELETE FROM purchase_invoice WHERE sn = :sn")
+    suspend fun deleteBySn(sn: String): Int
+
+    @Query("DELETE FROM purchase_invoice WHERE sn IN (:sns)")
+    suspend fun deleteBySns(sns: List<String>): Int
 
     @Query("DELETE FROM purchase_invoice")
-    suspend fun deleteAll()
+    suspend fun deleteAll():Int
 
-    /**
-     * 【推荐】响应式查询：获取所有采购账单，并按账单日期降序排序。
-     * @return 包含所有采购账单列表的 Flow
-     */
+    // --- 修改 (Update) ---
+
+    @Update
+    suspend fun update(bill: PurchaseInvoice): Int
+
+    @Query("UPDATE purchase_invoice SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
+
+    // --- 查询 (Query) ---
+
+    @Query("SELECT COUNT(*) FROM purchase_invoice")
+    suspend fun getCount(): Int
+
     @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
-    fun getAllPurchaseBills(): Flow<List<PurchaseInvoice>>
+    fun getAll(): Flow<List<PurchaseInvoice>>
 
-    /**
-     * 根据ID获取单个采购账单。
-     * @param billId 采购账单的ID
-     * @return 返回包含单个采购账单的 Flow，如果不存在则为 null
-     */
-    @Query("SELECT * FROM purchase_invoice WHERE id = :billId")
-    fun getPurchaseBillById(billId: Long): Flow<PurchaseInvoice?>
+    @Query("SELECT * FROM purchase_invoice WHERE id = :invoiceId")
+    suspend fun getById(invoiceId: Long): PurchaseInvoice
 
-    /**
-     * 为 Paging 3.0 提供分页数据源，获取所有采购账单,，并按账单日期降序排序。
-     * @return 返回 PagingSource
-     */
+    @Query("SELECT * FROM purchase_invoice WHERE order_id = :orderId")
+    fun getByOrderId(orderId: Long): Flow<List<PurchaseInvoice>>
+
+    @Query("SELECT * FROM purchase_invoice WHERE supplier_id = :supplierId")
+    fun getBySupplierId(supplierId: Long): Flow<List<PurchaseInvoice>>
+
+    @Query("SELECT * FROM purchase_invoice WHERE user_id = :userId")
+    fun getByUserId(userId: Long): Flow<List<PurchaseInvoice>>
+
+    @Query("SELECT * FROM purchase_invoice WHERE status = :status")
+    fun getByStatus(status: String): Flow<List<PurchaseInvoice>>
+
+    @Query("SELECT * FROM purchase_invoice WHERE created_at = :createdAt")
+    fun getByCreatedAt(createdAt: Long): Flow<List<PurchaseInvoice>>
+
+    // --- 更多查询 ---
+
     @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
-    fun getPurchaseBillsPagingSource(): PagingSource<Int, PurchaseInvoice>
+    fun getAllForFlow(): Flow<List<PurchaseInvoice>>
+
+    @Query("SELECT * FROM purchase_invoice WHERE sn = :sn ORDER BY created_at DESC")
+    fun getAllBySnForFlow(sn: String): Flow<List<PurchaseInvoice>>
+
+
+    @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
+    fun getAllForPaged(): PagingSource<Int,PurchaseInvoice>
+
+    @Query("SELECT * FROM purchase_invoice WHERE sn = :sn ORDER BY created_at DESC")
+    fun getAllBySnForPaged(sn: String): PagingSource<Int,PurchaseInvoice>
+
 }

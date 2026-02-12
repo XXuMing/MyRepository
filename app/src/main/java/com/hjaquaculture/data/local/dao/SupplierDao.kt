@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.Supplier
+import com.hjaquaculture.data.local.entity.Supplier
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -52,4 +52,7 @@ interface SupplierDao {
      */
     @Query("SELECT * FROM supplier ORDER BY name ASC")
     fun getSuppliersPagingSource(): PagingSource<Int, Supplier>
+
+    @Query("SELECT COUNT(*) FROM supplier")
+    suspend fun getCount(): Int
 }

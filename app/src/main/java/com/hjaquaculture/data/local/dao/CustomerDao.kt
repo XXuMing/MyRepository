@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.Customer
+import com.hjaquaculture.data.local.entity.Customer
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -56,6 +56,13 @@ interface CustomerDao {
      */
     @Query("DELETE FROM customer WHERE id = :customerId")
     suspend fun deleteById(customerId: Long)
+
+    /**
+     * 统计表中客户的数量。
+     * @return 返回客户数量
+     */
+    @Query("SELECT COUNT(*) FROM customer")
+    suspend fun getCount(): Int
 
     /**
      * 删除表中的所有客户。

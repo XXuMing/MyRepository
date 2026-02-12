@@ -30,9 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.hjaquaculture.R
-import com.hjaquaculture.feature.RegisterAction
+import com.hjaquaculture.feature.AuthAction
 import com.hjaquaculture.ui.theme.HJAquacultureTheme
 
 @Preview(showBackground = true)
@@ -45,7 +46,8 @@ fun RegisterPreview(){
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel(),
-    onAction: (RegisterAction) -> Unit
+    onAction: (AuthAction.Register) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var accountName by remember { mutableStateOf("") }
@@ -125,7 +127,7 @@ fun RegisterScreen(
                 }
                 is RegisterStatus.Success -> {
                     LocalSoftwareKeyboardController.current?.hide()
-                    onAction(RegisterAction.RegisterSuccess(state.username))
+                    onAction(AuthAction.Register.RegisterSuccess(state.username))
                 }
                 RegisterStatus.Idle -> {
                     // 闲置状态，可以显示提示语或者什么都不显示

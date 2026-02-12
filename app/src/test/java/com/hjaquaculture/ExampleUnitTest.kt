@@ -3,7 +3,7 @@ package com.hjaquaculture
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.hjaquaculture.data.local.BaseDatabase
+import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.UserDao
 import org.junit.After
 import org.junit.Before
@@ -22,14 +22,14 @@ class ExampleUnitTest {
 
 @RunWith(AndroidJUnit4::class)
 class UserDaoTest {
-    private lateinit var db: BaseDatabase
+    private lateinit var db: LocalDatabase
     private lateinit var userDao: UserDao
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext();
         // 创建内存数据库，数据仅存在于进程生命周期内
-        db = Room.inMemoryDatabaseBuilder(context, BaseDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, LocalDatabase::class.java)
             // 允许在主线程执行查询（仅用于测试，简化代码）
             .allowMainThreadQueries()
             .build()

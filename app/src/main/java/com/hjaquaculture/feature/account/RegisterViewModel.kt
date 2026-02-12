@@ -2,7 +2,8 @@ package com.hjaquaculture.feature.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjaquaculture.data.repository.UserRepository
+import com.hjaquaculture.domain.repository.RegisterResult
+import com.hjaquaculture.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,11 +66,11 @@ class RegisterViewModel @Inject constructor(
 
             _uiState.update { state ->
                 when (result) {
-                    is UserRepository.RegisterResult.Success ->
+                    is RegisterResult.Success ->
                         state.copy(actionStatus = RegisterStatus.Success("注册成功"))
-                    is UserRepository.RegisterResult.AlreadyExists ->
+                    is RegisterResult.AlreadyExists ->
                         state.copy(actionStatus = RegisterStatus.Error("用户名已存在"))
-                    is UserRepository.RegisterResult.Error ->
+                    is RegisterResult.Error ->
                         state.copy(actionStatus = RegisterStatus.Error("注册失败"))
                 }
             }

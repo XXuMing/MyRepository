@@ -5,8 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.hjaquaculture.data.repository.UserRepository
-import com.hjaquaculture.feature.LoginRoute
+import com.hjaquaculture.domain.repository.UserRepository
+import com.hjaquaculture.feature.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,7 +52,7 @@ sealed interface LoginStatus {
  * @property loginStatus 登录状态
  * @constructor 创建空登录 ui 状态
  */
-@Immutable // 性能优化提示：标记该类不可变
+@Immutable
 data class LoginUiState(
     val account: String = "",
     val password: String = "",
@@ -73,7 +73,7 @@ class LoginViewModel @Inject constructor(
 
     // 从导航参数中获取注册传来的初始用户名
     // 自动将导航参数映射回 Data Class
-    private val loginArgs = savedStateHandle.toRoute<LoginRoute>()
+    private val loginArgs = savedStateHandle.toRoute<Screen.Login>()
 
     private val _uiState = MutableStateFlow(
         LoginUiState(

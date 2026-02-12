@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.PurchasePayment
+import com.hjaquaculture.data.local.entity.PurchasePayment
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -28,6 +28,9 @@ interface PurchasePaymentDao {
     @Delete
     suspend fun delete(payment: PurchasePayment)
 
+    @Query("UPDATE purchase_payment SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
+
     @Query("DELETE FROM purchase_payment")
     suspend fun deleteAll()
 
@@ -36,7 +39,7 @@ interface PurchasePaymentDao {
      * @param billId 采购账单的ID
      * @return 包含该账单所有付款记录的 Flow
      */
-    @Query("SELECT * FROM purchase_payment WHERE bill_id = :billId ORDER BY payment_time DESC")
+    @Query("SELECT * FROM purchase_payment WHERE invoice_id = :billId ORDER BY payment_time DESC")
     fun getPaymentsForBill(billId: Long): Flow<List<PurchasePayment>>
 
     /**
@@ -45,4 +48,7 @@ interface PurchasePaymentDao {
      */
     @Query("SELECT * FROM purchase_payment ORDER BY payment_time DESC")
     fun getPurchasePaymentsPagingSource(): PagingSource<Int, PurchasePayment>
+
+    @Query("SELECT COUNT(*) FROM purchase_payment")
+    suspend fun getCount(): Int
 }

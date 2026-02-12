@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.User
+import com.hjaquaculture.data.local.entity.User
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -99,4 +99,6 @@ interface UserDao {
     @Query("SELECT * FROM User WHERE username = :username")
     suspend fun getUserByUsername(username: String): User?
 
+    @Query("SELECT COUNT(*) FROM user")
+    suspend fun getCount(): Int
 }

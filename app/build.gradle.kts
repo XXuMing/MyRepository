@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
@@ -84,6 +85,7 @@ dependencies {
     // 1. Room 基础配置
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler) // 编译时依赖，使用 KSP
 
     // 2. 单元测试配置 (JUnit 4)
@@ -102,9 +104,10 @@ dependencies {
     // Paging3 引用在 toml 文件中定义的依赖
     implementation(libs.androidx.paging.runtime)
     testImplementation(libs.androidx.paging.common) // 用于测试
+
     // 按需引用其他可选模块
-     //implementation(libs.androidx.paging.rxjava2)
-     implementation(libs.androidx.paging.compose)
+    //implementation(libs.androidx.paging.rxjava2)
+    implementation(libs.androidx.paging.compose)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -114,5 +117,8 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.compose.material3.windowSizeClass)
+
+    // 拖拽排序
+    implementation(libs.reorderable)
 
 }

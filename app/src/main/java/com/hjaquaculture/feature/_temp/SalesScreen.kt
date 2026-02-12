@@ -32,10 +32,10 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -222,7 +222,7 @@ fun SaleOrderCard(order: SaleOrder) {
                 exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300))
             ) {
                 Column {
-                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
                     Text(
                         "商品列表",
                         style = MaterialTheme.typography.titleSmall,
@@ -242,6 +242,12 @@ fun SaleOrderCard(order: SaleOrder) {
 /**
  * 订单项 (单行商品) 视图
  */
+@Preview
+@Composable
+fun SaleOrderItemViewPreview() {
+    val mockItem = SaleOrderItem("商品A", 299.0, 2, "红色, 500g")
+    SaleOrderItemView(mockItem)
+}
 @Composable
 private fun SaleOrderItemView(item: SaleOrderItem) {
     Row(modifier = Modifier.fillMaxWidth()) {

@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.PurchaseOrderItem
+import com.hjaquaculture.data.local.entity.PurchaseOrderItem
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -36,7 +36,7 @@ interface PurchaseOrderItemDao {
      * @param orderId 采购订单的ID
      * @return 包含该订单所有订单项的 Flow
      */
-    @Query("SELECT * FROM purchase_order_item WHERE purchase_id = :orderId")
+    @Query("SELECT * FROM purchase_order_item WHERE order_id = :orderId")
     fun getItemsForPurchaseOrder(orderId: Long): Flow<List<PurchaseOrderItem>>
 
     /**
@@ -44,6 +44,10 @@ interface PurchaseOrderItemDao {
      * （注意：通常按订单ID查询更有意义，此处提供一个全局分页的示例）
      * @return 返回 PagingSource
      */
-    @Query("SELECT * FROM purchase_order_item ORDER BY purchase_id DESC")
+    @Query("SELECT * FROM purchase_order_item ORDER BY order_id DESC")
     fun getPurchaseOrderItemsPagingSource(): PagingSource<Int, PurchaseOrderItem>
+
+
+    @Query("SELECT COUNT(*) FROM purchase_order_item")
+    suspend fun getCount(): Int
 }

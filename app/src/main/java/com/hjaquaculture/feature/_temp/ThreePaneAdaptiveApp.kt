@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -122,7 +122,7 @@ fun PageB(parentId: String, onItemSelected: (String) -> Unit) {
 @Composable
 fun PageC(parentId: String, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back") }
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
         Text("Page C (详情: $parentId)", style = MaterialTheme.typography.headlineSmall)
         Text("这是最终的详情页面内容。")
     }

@@ -1,5 +1,6 @@
 package com.hjaquaculture.feature.account
 
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -35,27 +36,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.hjaquaculture.R
-import com.hjaquaculture.feature.LoginAction
-import com.hjaquaculture.ui.theme.HJAquacultureTheme
-
-@Composable
-@Preview(showBackground = true)
-fun LoginPreview(){
-    HJAquacultureTheme() {
-        LoginScreen(hiltViewModel(),{})
-    }
-}
+import com.hjaquaculture.feature.AuthAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onAction: (LoginAction) -> Unit
+    onAction: (AuthAction.Login) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val titleColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val scope = rememberCoroutineScope()
@@ -69,16 +61,18 @@ fun LoginScreen(
     // 状态机监听：一旦状态变为 Success，触发导航 Action
     LaunchedEffect(state.loginStatus) {
         if (state.loginStatus is LoginStatus.LoginSuccess) {
-            onAction(LoginAction.LoginSuccess)
+            onAction(AuthAction.Login.LoginSuccess)
         }
     }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAction(LoginAction.GoToRegister) }
+                onClick = {
+                    onAction(AuthAction.Login.GoToRegister)
+                }
             ){
-                Icon(Icons.Filled.Add, contentDescription = "注册")
+                Icon(Icons.Outlined.Add, contentDescription = "注册")
             }
         }
     ) { contentPadding ->
@@ -136,9 +130,13 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { onAction(LoginAction.LoginSuccess) })
+                    onClick = { onAction(AuthAction.Login.LoginSuccess) }
+                )
                 {
                     Text(text = "登录", modifier = Modifier.padding(horizontal = 32.dp))
+                }
+                Button({onAction(AuthAction.Login.GotoTestScreen)}) {
+                    Text("TestScreen")
                 }
             }
         }

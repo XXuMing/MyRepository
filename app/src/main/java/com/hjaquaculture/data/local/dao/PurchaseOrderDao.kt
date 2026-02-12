@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.PurchaseOrder
+import com.hjaquaculture.data.local.entity.PurchaseOrder
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -27,6 +27,9 @@ interface PurchaseOrderDao {
 
     @Delete
     suspend fun delete(order: PurchaseOrder)
+
+    @Query("UPDATE purchase_order SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
 
     @Query("DELETE FROM purchase_order")
     suspend fun deleteAll()
@@ -60,4 +63,8 @@ interface PurchaseOrderDao {
      */
     @Query("SELECT * FROM purchase_order ORDER BY order_date DESC")
     fun getOrdersPagingSource(): PagingSource<Int, PurchaseOrder>
+
+
+    @Query("SELECT COUNT(*) FROM purchase_order")
+    suspend fun getCount(): Int
 }

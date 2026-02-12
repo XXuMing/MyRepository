@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.SaleOrderItem
+import com.hjaquaculture.data.local.entity.SaleOrderItem
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -46,4 +46,7 @@ interface SaleOrderItemDao {
      */
     @Query("SELECT * FROM sale_order_item ORDER BY id DESC")
     fun getSaleOrderItemsPagingSource(): PagingSource<Int, SaleOrderItem>
+
+    @Query("SELECT COUNT(*) FROM sale_order_item")
+    suspend fun getCount(): Int
 }

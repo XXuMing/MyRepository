@@ -7,49 +7,89 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.SaleInvoice
+import com.hjaquaculture.data.local.entity.SaleInvoice
 import kotlinx.coroutines.flow.Flow
 
 /**
  * 销售发票数据访问对象 (DAO)
+ * 负责提供与销售发票相关的数据库操作方法。
  */
 @Dao
 interface SaleInvoiceDao {
 
+    // --- 增加 (Create) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(invoice: SaleInvoice): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(invoices: List<SaleInvoice>)
+    suspend fun insertAll(invoices: List<SaleInvoice>): List<Long>
 
-    @Update
-    suspend fun update(invoice: SaleInvoice)
+    // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(invoice: SaleInvoice)
+    suspend fun delete(invoice: SaleInvoice): Int
+
+    @Query("DELETE FROM sale_invoice WHERE id = :id")
+    suspend fun deleteById(id: Long): Int
+
+    @Query("DELETE FROM sale_invoice WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>): Int
+
+    @Query("DELETE FROM sale_invoice WHERE sn = :sn")
+    suspend fun deleteBySn(sn: String): Int
+
+    @Query("DELETE FROM sale_invoice WHERE sn IN (:sns)")
+    suspend fun deleteBySns(sns: List<String>): Int
 
     @Query("DELETE FROM sale_invoice")
-    suspend fun deleteAll()
+    suspend fun deleteAll():Int
 
-    /**
-     * 【推荐】响应式查询：获取所有销售发票，并按开票日期降序排序。
-     * @return 包含所有销售发票列表的 Flow
-     */
+    // --- 修改 (Update) ---
+
+    @Update
+    suspend fun update(invoice: SaleInvoice):Int
+
+    @Query("UPDATE sale_invoice SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
+
+    // --- 查询 (Query) ---
+
+    @Query("SELECT COUNT(*) FROM sale_invoice")
+    suspend fun getCount(): Int
+
     @Query("SELECT * FROM sale_invoice ORDER BY created_at DESC")
-    fun getAllSaleInvoices(): Flow<List<SaleInvoice>>
+    fun getAll(): Flow<List<SaleInvoice>>
 
-    /**
-     * 根据ID获取单个销售发票。
-     * @param invoiceId 销售发票的ID
-     * @return 返回包含单个销售发票的 Flow，如果不存在则为 null
-     */
     @Query("SELECT * FROM sale_invoice WHERE id = :invoiceId")
-    fun getSaleInvoiceById(invoiceId: Long): Flow<SaleInvoice?>
+    suspend fun getById(invoiceId: Long): SaleInvoice
 
-    /**
-     * 为 Paging 3 提供分页数据源，获取所有销售发票。
-     * @return 返回 PagingSource
-     */
+    @Query("SELECT * FROM sale_invoice WHERE order_id = :orderId")
+    fun getByOrderId(orderId: Long): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice WHERE customer_id = :customerId")
+    fun getByCustomerId(customerId: Long): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice WHERE user_id = :userId")
+    fun getByUserId(userId: Long): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice WHERE status = :status")
+    fun getByStatus(status: String): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice WHERE created_at = :createdAt")
+    fun getByCreatedAt(createdAt: Long): Flow<List<SaleInvoice>>
+
+    // --- 更多查询 ---
+
     @Query("SELECT * FROM sale_invoice ORDER BY created_at DESC")
-    fun getSaleInvoicesPagingSource(): PagingSource<Int, SaleInvoice>
+    fun getAllForFlow(): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice WHERE sn = :sn ORDER BY created_at DESC")
+    fun getAllBySnForFlow(sn: String): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM sale_invoice ORDER BY created_at DESC")
+    fun getAllForPaged(): PagingSource<Int,SaleInvoice>
+
+    @Query("SELECT * FROM sale_invoice WHERE sn = :sn ORDER BY created_at DESC")
+    fun getAllBySnForPaged(sn: String): PagingSource<Int,SaleInvoice>
+
 }

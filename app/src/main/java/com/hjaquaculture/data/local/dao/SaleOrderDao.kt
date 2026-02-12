@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.SaleOrder
+import com.hjaquaculture.data.local.entity.SaleOrder
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -18,6 +18,14 @@ interface SaleOrderDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(order: SaleOrder): Long
+
+    /**
+     * 更新订单编号
+     * @param id 订单ID
+     * @param orderSn 新的订单编号
+     */
+    @Query("UPDATE sale_order SET sn = :orderSn WHERE id = :id")
+    suspend fun updateSn(id: Long, orderSn: String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(orders: List<SaleOrder>)
@@ -52,4 +60,7 @@ interface SaleOrderDao {
      */
     @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
     fun getSaleOrdersPagingSource(): PagingSource<Int, SaleOrder>
+
+    @Query("SELECT COUNT(*) FROM sale_order")
+    suspend fun getCount(): Int
 }

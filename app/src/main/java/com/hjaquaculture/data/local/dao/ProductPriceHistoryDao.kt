@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.ProductPriceHistory
+import com.hjaquaculture.data.local.entity.ProductPriceHistory
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -41,13 +41,16 @@ interface ProductPriceHistoryDao {
      * @param productId 商品的ID
      * @return 包含该商品所有价格历史记录的 Flow
      */
-    @Query("SELECT * FROM product_price_history WHERE product_id = :productId ORDER BY created_at DESC")
+    @Query("SELECT * FROM product_price_history WHERE product_id = :productId ORDER BY new_price_date DESC")
     fun getPriceHistoryForProduct(productId: Long): Flow<List<ProductPriceHistory>>
 
     /**
      * 为 Paging 3.0 提供分页数据源，获取所有价格历史记录。
      * @return 返回 PagingSource
      */
-    @Query("SELECT * FROM product_price_history ORDER BY created_at DESC")
+    @Query("SELECT * FROM product_price_history ORDER BY new_price_date DESC")
     fun getPriceHistoryPagingSource(): PagingSource<Int, ProductPriceHistory>
+
+    @Query("SELECT COUNT(*) FROM product_price_history")
+    suspend fun getCount(): Int
 }

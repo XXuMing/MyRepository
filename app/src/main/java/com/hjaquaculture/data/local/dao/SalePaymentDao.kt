@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.model.entity.SalePayment
+import com.hjaquaculture.data.local.entity.SalePayment
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -28,6 +28,9 @@ interface SalePaymentDao {
     @Delete
     suspend fun delete(payment: SalePayment)
 
+    @Query("UPDATE sale_payment SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
+
     @Query("DELETE FROM sale_payment")
     suspend fun deleteAll()
 
@@ -45,4 +48,7 @@ interface SalePaymentDao {
      */
     @Query("SELECT * FROM sale_payment ORDER BY payment_time DESC")
     fun getSalePaymentsPagingSource(): PagingSource<Int, SalePayment>
+
+    @Query("SELECT COUNT(*) FROM sale_payment")
+    suspend fun getCount(): Int
 }
