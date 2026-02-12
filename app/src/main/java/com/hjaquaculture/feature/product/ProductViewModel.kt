@@ -15,9 +15,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.collections.filter
-import kotlin.collections.map
-
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
@@ -35,6 +32,9 @@ class ProductViewModel @Inject constructor(
 
     // 增加：用于在拖拽过程中保持 UI 顺序的 ID 列表流
     private val _reorderSortOrder = MutableStateFlow<List<Long>>(emptyList())
+
+    // 用于管理拖拽排序的防抖 Job
+    private var reorderJob: kotlinx.coroutines.Job? = null
 
     // 将数据库的 Map 转换为 UI 需要的 List
     private var _uiState: StateFlow<List<CategoryWithProductsVO>> =
@@ -105,11 +105,9 @@ class ProductViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            // 1. 先从临时列表移除，防止 Key 冲突
             _tempNewCategories.update { list -> list.filter { it.category.id != tempId } }
-            // 2. 插入数据库（数据库会自动生成自增 ID 并通过 Flow 刷新 UI）
             repository.addCategory(ProductCategory(name = finalName))
-            // 3. 清空手动排序记录，恢复由数据库 sort 字段驱动
+            // 保存新项后清空排序缓存，交还给数据库驱动
             _reorderSortOrder.value = emptyList()
         }
     }
@@ -122,24 +120,28 @@ class ProductViewModel @Inject constructor(
         )
         _tempNewCategories.value = listOf(newCategory) + _tempNewCategories.value
     }
-
+    // 1. 内存移动：仅在拖拽过程中由 UI 频繁调用，不涉及数据库
     fun moveCategory(fromIndex: Int, toIndex: Int) {
         val currentList = _uiState.value.toMutableList()
         if (fromIndex !in currentList.indices || toIndex !in currentList.indices) return
 
-        // 1. 内存内交换
         val movedItem = currentList.removeAt(fromIndex)
         currentList.add(toIndex, movedItem)
 
-        // 2. 更新手动排序 ID 流，让 UI 立即感知变化且不会因为 Key 重复而崩溃
+        // 核心：只更新 ID 顺序流，让 UI 跟着动
         _reorderSortOrder.value = currentList.map { it.category.id }
+    }
 
-        // 3. 将最新的顺序同步到数据库
+    // 2. 同步到数据库：这个函数只在“松手”瞬间调用一次
+    fun syncOrderToDb() {
+        val currentList = _uiState.value
         viewModelScope.launch(Dispatchers.IO) {
             val updatedEntities = currentList.mapIndexed { index, vo ->
                 vo.category.copy(sort = index)
             }
             repository.updateCategoriesOrder(updatedEntities)
+            // 写入成功后可以考虑清空 reorderOrder，让数据库 Flow 接管顺序
+            // _reorderSortOrder.value = emptyList()
         }
     }
 }

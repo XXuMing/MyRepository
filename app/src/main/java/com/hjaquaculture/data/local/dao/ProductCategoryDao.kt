@@ -40,12 +40,12 @@ interface ProductCategoryDao{
     @Query("UPDATE product_category SET name = :newName WHERE id = :id")
     suspend fun update(id: Long, newName: String): Int
 
-    // 2. 批量更新分类
+    // 批量更新分类
     // Room 会根据传入对象的 PrimaryKey (id) 自动找到对应的行并更新 sort 字段
     @Update
     suspend fun updateCategories(categories: List<ProductCategory>)
 
-    // 3. 开启事务进行批量更新（可选，但推荐）
+    // 开启事务进行批量更新（可选，但推荐）
     @Transaction
     suspend fun updateSortOrder(categoriesWithNewSort: List<ProductCategory>) {
         updateCategories(categoriesWithNewSort)

@@ -11,32 +11,70 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCard
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.hjaquaculture.data.local.entity.Product
-import com.hjaquaculture.data.local.entity.ProductCategory
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -48,34 +86,47 @@ fun ProductScreen(
 ) {
     val categories by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
 
-    // 新版 Reorderable 初始化
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         viewModel.moveCategory(from.index, to.index)
     }
 
+    LaunchedEffect(reorderableState.isAnyItemDragging) {
+        if (!reorderableState.isAnyItemDragging) {
+            viewModel.syncOrderToDb()
+        }
+    }
+
     Scaffold(
+        // 全局点击监听：点击空白处清除焦点，从而触发 EditableText 的保存逻辑
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        },
         floatingActionButton = {
             Column {
-                FloatingActionButton(onClick = { viewModel.addNewCategory() }) {
+                FloatingActionButton(onClick = { /* 占位功能 */ }) {
                     Icon(Icons.Filled.AddCard, contentDescription = null)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                FloatingActionButton(onClick = { /* 其他功能 */ }) {
+                FloatingActionButton(onClick = { viewModel.addNewCategory() }) {
                     Icon(Icons.Filled.Add, contentDescription = null)
                 }
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column{
             OutlinedTextField(
                 value = "",
                 onValueChange = { },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 label = { Text("搜索") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
             )
+            Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
                 state = lazyListState,
@@ -88,11 +139,14 @@ fun ProductScreen(
 
                         CategoryGroupCard(
                             state = item,
-                            modifier = Modifier.shadow(elevation),
-                            onToggle = { viewModel.toggleCategory(item.category.id) },
-                            onProductClick = { /* TODO */ },
-                            // 注意：新版 handle 逻辑通过 modifier 注入
-                            dragHandleModifier = Modifier.draggableHandle(),
+                            modifier = Modifier
+                                .shadow(elevation)
+                                .draggableHandle()
+                                .clickable {
+                                    focusManager.clearFocus()
+                                    viewModel.toggleCategory(item.category.id)
+                                },
+                            onProductClick = { /* TODO: 跳转商品详情 */ },
                             onSaveName = { newName ->
                                 if (item.isInitialEditing) {
                                     viewModel.saveCategory(item.category.id, newName)
@@ -112,21 +166,18 @@ fun ProductScreen(
 fun CategoryGroupCard(
     state: CategoryWithProductsVO,
     modifier: Modifier = Modifier,
-    dragHandleModifier: Modifier = Modifier, // 接收拖拽手柄修饰符
-    onToggle: () -> Unit,
     onProductClick: (Long) -> Unit,
     onSaveName: (String) -> Unit
 ) {
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp).clickable { onToggle() }
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Column {
             CategoryHeader(
                 state = state,
-                onConfirm = onSaveName,
-                dragHandleModifier = dragHandleModifier
+                onConfirm = onSaveName
             )
 
             AnimatedVisibility(
@@ -166,7 +217,6 @@ fun CategoryGroupCard(
 @Composable
 private fun CategoryHeader(
     state: CategoryWithProductsVO,
-    dragHandleModifier: Modifier,
     onConfirm: (String) -> Unit
 ) {
     val rotation by animateFloatAsState(targetValue = if (state.isExpanded) 180f else 0f)
@@ -175,18 +225,6 @@ private fun CategoryHeader(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 关键点：将 dragHandleModifier 绑定给这个 Icon
-        Icon(
-            imageVector = Icons.Default.DragHandle,
-            contentDescription = "Drag",
-            modifier = dragHandleModifier
-                .padding(end = 12.dp)// 关键：阻止手柄处的点击事件向上传递给 Card
-                .pointerInput(Unit) {
-                    detectTapGestures { /* 消耗掉点击，不执行任何操作 */ }
-                },
-            tint = Color.Gray
-        )
-
         Column(modifier = Modifier.weight(1f)) {
             EditableText(
                 initialText = state.category.name,
@@ -210,18 +248,36 @@ fun EditableText(
     autoFocus: Boolean = false,
     onConfirm: (String) -> Unit
 ) {
+    // 状态管理
     var isEditing by remember { mutableStateOf(autoFocus) }
     var textValue by remember { mutableStateOf(TextFieldValue(initialText)) }
-    val focusRequester = remember { FocusRequester() }
 
+    val focusManager = LocalFocusManager.current
+
+    // 定义统一的提交逻辑
+    fun handleConfirm() {
+        isEditing = false
+        onConfirm(textValue.text)
+    }
+
+    // 拦截点击事件，防止穿透到外层导致折叠
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.height(40.dp)
+        modifier = Modifier
+            .height(40.dp)
+            .pointerInput(Unit) {
+                detectTapGestures { /* 仅仅消耗事件 */ }
+            }
     ) {
-        AnimatedContent(targetState = isEditing, label = "") { editing ->
+        AnimatedContent(targetState = isEditing, label = "EditTransition") { editing ->
             if (editing) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    IconButton(onClick = { isEditing = true }) {
+                // 进入编辑模式的作用域
+                val focusRequester = remember { FocusRequester() }
+                // [关键修复]：增加一个标志位，确保只有获得过焦点后的失去焦点才算数
+                var hasGainedFocus by remember { mutableStateOf(false) }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { /* TODO: 删除 */ }) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                     BasicTextField(
@@ -230,17 +286,36 @@ fun EditableText(
                         singleLine = true,
                         modifier = Modifier
                             .widthIn(min = 50.dp, max = 150.dp)
-                            .focusRequester(focusRequester),
-                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { focusState ->
+                                // [关键修复逻辑]
+                                if (focusState.isFocused) {
+                                    hasGainedFocus = true
+                                } else if (hasGainedFocus) {
+                                    // 只有当曾经获得过焦点(hasGainedFocus=true)，现在又失去焦点时，才保存
+                                    handleConfirm()
+                                }
+                            },
+                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                handleConfirm()
+                                focusManager.clearFocus() // 收起键盘
+                            }
+                        )
                     )
                     IconButton(onClick = {
-                        isEditing = false
-                        onConfirm(textValue.text)
+                        handleConfirm()
+                        focusManager.clearFocus()
                     }) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
+
+                    // 自动请求焦点
                     LaunchedEffect(Unit) {
                         focusRequester.requestFocus()
+                        // 设置光标到末尾
                         textValue = textValue.copy(selection = TextRange(textValue.text.length))
                     }
                 }
@@ -262,8 +337,12 @@ fun EditableText(
 
 @Composable
 private fun ProductItemButton(product: Product, onClick: (Long) -> Unit) {
+    val focusManager = LocalFocusManager.current
     OutlinedButton(
-        onClick = { onClick(product.id) },
+        onClick = {
+            focusManager.clearFocus()
+            onClick(product.id)
+        },
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
