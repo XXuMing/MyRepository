@@ -1,83 +1,111 @@
 package com.hjaquaculture.feature.relationship
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.hjaquaculture.feature.invoice.PurchaseInvoiceScreen
-import com.hjaquaculture.feature.invoice.SaleInvoiceScreen
-import kotlinx.coroutines.launch
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.hjaquaculture.feature.AuthAction
+import com.hjaquaculture.feature._temp.FilterOption
 
 @Composable
 fun RelationshipScreen(
-    modifier: Modifier = Modifier
+    vm: RelationshipViewModel = hiltViewModel(),
+    onAction: (AuthAction) -> Unit,
+    scaffoldPadding: PaddingValues,
 ) {
+    val listItems = vm.relationshipPagingData.collectAsLazyPagingItems()
+    var filter by remember { mutableStateOf(FilterOption()) }
+    var isFilterWrite by remember { mutableStateOf(false) }
 
-    // 1. 定义 Tab 数据
-    val titles = listOf("客户管理", "采购商管理")
 
-    // 2. 创建 PagerState（控制页面滚动）
-    // pageCount 需要与 Tab 数量一致
-    val pagerState = rememberPagerState(pageCount = { titles.size })
-
-    // 3. 创建协程作用域（用于点击 Tab 时执行滚动动画）
-    val coroutineScope = rememberCoroutineScope()
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 4. 实现 PrimaryTabRow
-        PrimaryTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.surface, // 背景颜色
-            contentColor = MaterialTheme.colorScheme.primary,   // 选中的文字/指示器颜色
-            indicator = {
-                // 默认指示器，也可以自定义
-                TabRowDefaults.PrimaryIndicator(
-                    modifier = Modifier.tabIndicatorOffset(pagerState.currentPage),
-                    width = 32.dp // 指示器宽度
+    Column(
+        modifier = Modifier.padding(scaffoldPadding).padding(horizontal = 8.dp),
+    ) {
+        Row() {
+            OutlinedTextField(
+                value = "",
+                onValueChange = { },
+                label = { Text("搜索") },
+                placeholder = { Text("名称/昵称") },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                shape = MaterialTheme.shapes.medium
+            )
+            FilledIconButton(
+                onClick = { isFilterWrite = !isFilterWrite },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = if (isFilterWrite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
                 )
-            }
-        ) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        // 点击 Tab 时，同步滚动 Pager
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    text = {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                )
+            ) {
+                Icon(Icons.Default.Tune, contentDescription = "高级筛选")
             }
         }
+        LazyColumn {
+            items(
+                count = listItems.itemCount,
+                key = listItems.itemKey { it.syntheticId }
+            ){
+                    index ->
+                val item = listItems[index]
+                item?.let { RelationshipCard(item) }
 
-        // 5. 实现内容区域 (HorizontalPager)
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.Top
-        ) { pageIndex ->
-            when (pageIndex) {
-                0 -> CustomerScreen()
-                1 -> SupplierScreen()
             }
+        }
+    }
+
+}
+
+@Composable
+fun RelationshipCard(people: PeopleVO){
+
+    var isExpanded by remember { mutableStateOf(false) }
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isExpanded = !isExpanded },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(text = "${people.symbol}: ${people.name}")
+            Text(text = people.createdAt)
+        }
+        Row{
+            Text(text = "电话：${people.phone}")
+            Spacer(Modifier.weight(1f))
+        }
+        Row {
+            Text(text = "地址：${people.address}")
         }
     }
 }

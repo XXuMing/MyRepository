@@ -2,103 +2,203 @@ package com.hjaquaculture.feature.invoice
 
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.BottomAppBar
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.ComposeNavigator
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.feature.AuthAction
+import com.hjaquaculture.feature._temp.FilterOption
+import com.hjaquaculture.feature._temp.InlineFilterPanelStaggered
 
-
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
-
-@Preview
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun InvoiceScreen() {
-    // 1. 定义 Tab 数据
-    val titles = listOf("采购账单", "销售账单")
+fun InvoiceScreen(
+    vm: InvoiceViewModel = hiltViewModel(),
+    onAction: (AuthAction) -> Unit,
+    scaffoldPadding: PaddingValues,
+) {
 
-    // 2. 创建 PagerState（控制页面滚动）
-    // pageCount 需要与 Tab 数量一致
-    val pagerState = rememberPagerState(pageCount = { titles.size })
+    val listItems = vm.invoicePagingData.collectAsLazyPagingItems()
+    var filter by remember { mutableStateOf(FilterOption()) }
+    var isFilterWrite by remember { mutableStateOf(false) }
 
-    // 3. 创建协程作用域（用于点击 Tab 时执行滚动动画）
-    val coroutineScope = rememberCoroutineScope()
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(scaffoldPadding).padding(horizontal = 8.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 4. 实现 PrimaryTabRow
-        PrimaryTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.surface, // 背景颜色
-            contentColor = MaterialTheme.colorScheme.primary,   // 选中的文字/指示器颜色
-            indicator = {
-                // 默认指示器，也可以自定义
-                TabRowDefaults.PrimaryIndicator(
-                    modifier = Modifier
-                        .tabIndicatorOffset(pagerState.currentPage),
-                    width = Dp.Unspecified // 明确告诉系统不要使用固定宽度
+            OutlinedTextField(
+                value = "",
+                onValueChange = { },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("搜索") },
+                placeholder = { Text("商品类别/商品名称") },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                shape = MaterialTheme.shapes.medium
+            )
+            FilledIconButton(
+                onClick = { isFilterWrite = !isFilterWrite },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = if (isFilterWrite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
                 )
-            }
-        ) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        // 点击 Tab 时，同步滚动 Pager
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    text = {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                )
+            ) {
+                Icon(Icons.Default.Tune, contentDescription = "高级筛选")
             }
         }
 
-        // 5. 实现内容区域 (HorizontalPager)
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.Top
-        ) { pageIndex ->
-            when (pageIndex) {
-                0 -> PurchaseInvoiceScreen()
-                1 -> SaleInvoiceScreen()
+        InlineFilterPanelStaggered(
+            isVisible = isFilterWrite,
+            currentOption = filter,
+            onChanged = { filter = it }
+        )
+
+        LazyColumn {
+            items(
+                count = listItems.itemCount,
+                key = listItems.itemKey { it.syntheticId }
+            ) { index ->
+                val item = listItems[index]
+                item?.let { InvoiceCard(item) }
+                Spacer(Modifier.height(8.dp))
+            }
+
+        }
+    }
+
+
+
+}
+
+
+@Preview
+@Composable
+fun PreviewInvoiceCard() {
+    InvoiceCard(
+        InvoiceVO(
+            symbol = InvoiceSymbol.SALE,
+            symbolDescription = "销售订单",
+            syntheticId = "SALE_INVOICE_1",
+            originalId = 1,
+            sn = "123456789",
+            partnerId = 1,
+            partnerName = "测试客户",
+            creatorId = 1,
+            creatorName = "测试用户",
+            amountTotal = "100.00",
+            amountPaid = "50.00",
+            amountRem = "50.00",
+            status = "已付",
+            remark = "测试备注",
+            createdAt = "2023-04-01",
+            isDetailsExpanded = false
+        )
+    )
+}
+@Composable
+fun InvoiceCard(invoiceVO: InvoiceVO){
+    var isExpanded by remember { mutableStateOf(false) }
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isExpanded = !isExpanded },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // --- 卡片头部 ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${invoiceVO.symbol.description}: ${invoiceVO.partnerName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(invoiceVO.createdAt)
+            }
+            Row{
+                Text("单号：${invoiceVO.sn}")
+                Spacer(Modifier.weight(1f))
+                Text(invoiceVO.status)
+                Spacer(Modifier.weight(1f))
+                Text(invoiceVO.creatorName)
+                Spacer(Modifier.weight(1f))
+            }
+            Row{
+                Text("应付：${invoiceVO.amountTotal}")
+                Spacer(Modifier.weight(1f))
+                Text("实付：${invoiceVO.amountPaid}")
+                Spacer(Modifier.weight(1f))
+                Text("欠付：${invoiceVO.amountRem}")
+                Spacer(Modifier.weight(1f))
+            }
+            if(invoiceVO.remark != null){
+                Row{
+                    Text("备注：${invoiceVO.remark}")
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Text(
+                        text = if (isExpanded) "收起详情" else "查看详情",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
         }
     }

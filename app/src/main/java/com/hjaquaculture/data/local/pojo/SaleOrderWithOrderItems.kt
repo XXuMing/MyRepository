@@ -2,17 +2,17 @@ package com.hjaquaculture.data.local.pojo
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.hjaquaculture.data.local.entity.SaleOrder
-import com.hjaquaculture.data.local.entity.SaleOrderItem
+import com.hjaquaculture.data.local.entity.SaleOrderEntity
+import com.hjaquaculture.data.local.entity.SaleOrderItemEntity
 
 
 data class SaleOrderWithOrderItems(
-    @Embedded val saleOrder: SaleOrder,
+    @Embedded val saleOrderEntity: SaleOrderEntity,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "sale_order_id",
-        entity = SaleOrderItem::class
+        entity = SaleOrderItemEntity::class
     )
-    val orderItems: List<SaleOrderItem>
+    val orderItems: List<SaleOrderItemEntity>
 )

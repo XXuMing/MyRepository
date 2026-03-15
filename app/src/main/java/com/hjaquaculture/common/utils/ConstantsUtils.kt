@@ -1,11 +1,10 @@
 package com.hjaquaculture.common.utils
-import android.text.format.DateUtils
+
 import androidx.room.TypeConverter
 import com.hjaquaculture.common.utils.InvoiceStatus.Companion.fromCode
-import com.hjaquaculture.common.utils.PurchaseOrderStatus.Companion.fromCode
-import com.hjaquaculture.common.utils.PurchaseOrderType.Companion.fromCode
-import com.hjaquaculture.common.utils.SaleOrderStatus.Companion.fromCode
-import com.hjaquaculture.common.utils.SaleOrderType.Companion.fromCode
+import com.hjaquaculture.common.utils.OrderStatus.Companion.fromCode
+import com.hjaquaculture.common.utils.OrderType.Companion.fromCode
+import com.hjaquaculture.common.utils.PaymentMethods.Companion.fromCode
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.text.SimpleDateFormat
@@ -15,7 +14,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.time.ExperimentalTime
 
 // ==========================================
 // 1. 基础模块 (Base Module)
@@ -81,14 +79,14 @@ class OrderManager @Inject constructor() {
  * @property fromCode 根据代码获取状态
  */
 enum class InvoiceStatus(val code: Int, val description: String) {
-    UNKNOWN(0, "未知状态"),
-    PAID(1, "已付"),
-    UNPAID(2, "未付"),
-    PARTIALLY_PAID(3, "部分支付"),
-    VOID(-1, "已作废");
+    UNPAID(1, "未付"),
+    PARTIALLY_PAID(2, "部分支付"),
+    PAID(3, "已付"),
+    CANCELLED(-1, "作废");
 
     companion object {
-        fun fromCode(code: Int) = entries.find { it.code == code } ?: UNKNOWN
+        fun fromCode(code: Int) = entries.find { it.code == code } ?:
+        throw IllegalArgumentException("未知的账单状态: $code")
     }
 }
 
@@ -136,120 +134,149 @@ class PaymentMethodsConverter {
     fun toStatus(value: Int): PaymentMethods = PaymentMethods.fromCode(value)
 }
 
-// ==========================================
-// 2. 采购模块 (Purchase Module)
-// ==========================================
 
 
+
+// ==========================================
+// 3. 订单模块 (Order Module)
+// ==========================================
+enum class OrderSymbol(val dbValue: String, val description: String){
+    SALE("SALE_ORDER", "销售订单"),
+    PURCHASE("PUR_ORDER", "采购订单");
+
+    companion object {
+        fun fromString(value: String?) = entries.find { it.dbValue == value } ?:
+        throw IllegalArgumentException("未知的订单类别: $value")
+    }
+}
+class OrderSymbolConverters {
+    @TypeConverter
+    fun fromOrderSymbol(symbol: OrderSymbol): String = symbol.dbValue
+
+    @TypeConverter
+    fun toOrderSymbol(dbValue: String?): OrderSymbol {
+        return OrderSymbol.fromString(dbValue)
+    }
+}
+
+enum class InvoiceSymbol(val dbValue: String, val description: String) {
+    SALE("SALE_INVOICE", "销售账单"),
+    PURCHASE("PUR_INVOICE", "采购账单");
+
+    companion object {
+        fun fromString(value: String?) = entries.find { it.dbValue == value } ?:
+        throw IllegalArgumentException("未知的账单类别: $value")
+    }
+}
+class InvoiceSymbolConverters {
+    @TypeConverter
+    fun fromInvoiceSymbol(symbol: InvoiceSymbol): String = symbol.dbValue
+
+    @TypeConverter
+    fun toInvoiceSymbol(dbValue: String?): InvoiceSymbol {
+        return InvoiceSymbol.fromString(dbValue)
+    }
+}
+
+enum class PeopleSymbol(val dbValue: String, val description: String){
+    USER("USER", "用户"),
+    CUSTOMER("CUSTOMER", "客户"),
+    SUPPLIER("SUPPLIER", "供应商");
+    companion object {
+        fun fromString(value: String?) = entries.find { it.dbValue == value } ?:
+        throw IllegalArgumentException("未知的人员类别: $value")
+    }
+}
+class PeopleSymbolConverters {
+    @TypeConverter
+    fun fromPeopleSymbol(symbol: PeopleSymbol): String = symbol.dbValue
+
+    @TypeConverter
+    fun toPeopleSymbol(dbValue: String?): PeopleSymbol {
+        return PeopleSymbol.fromString(dbValue)
+    }
+}
 /**
- * 采购订单类型
+ * 订单类型
  * @property code 类型代码
  * @property description 类型描述
  * @property fromCode 根据代码获取类型
  */
-enum class PurchaseOrderType(val code: Int, val description: String) {
-    UNKNOWN(-99, "未知类型"),
-    RECEIVE_SHIPMENT(1, "收寄货"),
-    SELF_PURCHASE(2, "自采购");
+enum class OrderType(val code: Int, val description: String) {
+    PICKUP(1, "自提"),
+    FREIGHT(2, "货运");
 
     companion object {
-        fun fromCode(code: Int) = entries.find { it.code == code } ?: UNKNOWN
+        fun fromCode(code: Int) = entries.find { it.code == code } ?:
+        throw IllegalArgumentException("未知的订单类型: $code")
     }
 }
 
 /**
- * 采购订单状态
+ * 订单类型转换器
+ * 将 OrderType 转换为 Int，并反向转换
+ * @property fromOrderType 将 OrderType 转换为 Int
+ * @property toOrderType 将 Int 转换为 OrderType
+ */
+class OrderTypeConverter {
+    @TypeConverter
+    fun fromOrderType(type: OrderType): Int = type.code
+
+    @TypeConverter
+    fun toOrderType(value: Int): OrderType = OrderType.fromCode(value)
+
+}
+/**
+ * 订单状态
  * @property code 状态代码
  * @property description 状态描述
  * @property fromCode 根据代码获取状态
  */
-enum class PurchaseOrderStatus(val code: Int, val description: String) {
-    UNKNOWN(-99, "未知状态"),
-    AUDITED(1, "已审核"),
-
-    UNAUDITED(2, "未审核");
-
+enum class OrderStatus(val code: Int, val description: String) {
+    /**
+     * 作废
+     */
+    CANCELLED(-1,"作废"),
+    /**
+     * 草稿
+     */
+    DRAFT(0,"草稿"),
+    /**
+     * 预定
+     */
+    RESERVATION(10,"预定"),
+    /**
+     * 确定
+     */
+    CONFIRMED(20,"确认"),
+    /**
+     * 完成
+     */
+    COMPLETED(30,"完成");
     companion object {
-        fun fromCode(code: Int) = entries.find { it.code == code } ?: UNKNOWN
+        fun fromCode(code: Int) = entries.find { it.code == code } ?:
+        throw IllegalArgumentException("未知的订单状态: $code")
     }
+    /**
+     * 辅助方法：判断订单是否处于活跃状态（未完成且未作废）
+     */
+    fun isActive(): Boolean = this.code in 0..20
 }
+
 
 /**
- * 采购订单状态转换器
- * 将 PurchaseOrderStatus 转换为 Int，并反向转换
- * @property fromStatus 将 PurchaseOrderStatus 转换为 Int
- * @property toStatus 将 Int 转换为 PurchaseOrderStatus
- * @property fromType 将 PurchaseOrderType 转换为 Int
- * @property toType 将 Int 转换为 PurchaseOrderType
+ * 订单状态转换器
+ * 将 OrderStatus 转换为 Int，并反向转换
+ * @property fromOrderStatus 将 OrderStatus 转换为 Int
+ * @property toOrderStatus 将 Int 转换为 OrderStatus
  */
-class PurchaseOrderConverter {
+class OrderStatusConverter {
     @TypeConverter
-    fun fromStatus(status: PurchaseOrderStatus): Int = status.code
-    @TypeConverter
-    fun toStatus(value: Int): PurchaseOrderStatus = PurchaseOrderStatus.fromCode(value)
+    fun fromOrderStatus(status: OrderStatus): Int = status.code
 
     @TypeConverter
-    fun fromType(type: PurchaseOrderType): Int = type.code
-    @TypeConverter
-    fun toType(value: Int): PurchaseOrderType = PurchaseOrderType.fromCode(value)
+    fun toOrderStatus(value: Int): OrderStatus = OrderStatus.fromCode(value)
 }
-
-
-// ==========================================
-// 3. 销售模块 (Sale Module)
-// ==========================================
-
-/**
- * 销售订单类型
- * @property code 类型代码
- * @property description 类型描述
- * @property fromCode 根据代码获取类型
- */
-enum class SaleOrderType(val code: Int, val description: String) {
-    UNKNOWN(-99, "未知类型"),
-    PICKUP(0, "自提"),
-    SHIPPING(1, "寄货");
-
-    companion object {
-        fun fromCode(code: Int) = entries.find { it.code == code } ?: UNKNOWN
-    }
-}
-
-/**
- * 销售订单状态
- * @property code 状态代码
- * @property description 状态描述
- * @property fromCode 根据代码获取状态
- */
-enum class SaleOrderStatus(val code: Int, val description: String) {
-    //自提=10，寄货=20，取消=0
-    UNKNOWN(-99, "未知状态"),
-    CANCELLED(-1, "已取消"),
-    COMPLETED(100, "已完成"),
-    PICKUP_UNPAID(10, "自提未付"),
-    PICKUP_PAID(11, "自提已付"),
-    SHIPPING_UNPAID_PENDING(20, "寄货未付待处理"),
-    SHIPPING_UNPAID_PROCESSED(21, "寄货未付已处理"),
-    SHIPPING_PAID(22, "寄货已付");
-    companion object {
-        fun fromCode(code: Int) = entries.find { it.code == code } ?: UNKNOWN
-    }
-}
-
-class SaleOrderConverter {
-    @TypeConverter
-    fun fromOrderType(type: SaleOrderType): Int = type.code
-
-    @TypeConverter
-    fun toOrderType(value: Int): SaleOrderType = SaleOrderType.fromCode(value)
-
-    @TypeConverter
-    fun fromOrderStatus(status: SaleOrderStatus): Int = status.code
-
-    @TypeConverter
-    fun toOrderStatus(value: Int): SaleOrderStatus = SaleOrderStatus.fromCode(value)
-}
-
 /**
  *  时间处理工具
  */

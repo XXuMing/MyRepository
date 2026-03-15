@@ -4,8 +4,6 @@ kotlin = "2.2.21"
 ksp = "2.2.21-2.0.4"
 material = "1.13.0"
 material3 = "1.3.1"
-appcompat = "1.7.1"
-constraintlayout = "2.2.1"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitKtx = "1.3.0"
@@ -19,7 +17,7 @@ hilt = "2.57.2"
 
 hiltNavigation = "1.3.0"
 
-room = "2.8.4"
+room = "2.7.0" # 2.8.4  2.7.0
 kotlinxCoroutines = "1.10.2"
 androidXTestCore = "1.7.0"
 
@@ -30,6 +28,8 @@ reorderable = "3.0.0"
 # Jetpack Navigation (Compose)
 navigation = "2.8.5"
 kotlinxSerializationCore = "1.6.3"
+appcompatVersion = "1.7.1"
+constraintlayoutVersion = "2.2.1"
 
 
 [libraries]
@@ -63,9 +63,9 @@ androidx-compose-material3-adaptive-navigation-suite = { group = "androidx.compo
 # 获取窗口大小
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3" }
 
-# 基础图标（数量较少）
+# 基础图标库
 material-icons-core= { group = "androidx.compose.material", name = "material-icons-core" }
-# 扩展图标（包含 Edit, Check 等大部分常用图标）
+# 扩展图标库
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 # Coil 3（由 Kotlin 开发的 Android 异步图像加载库）
@@ -80,6 +80,8 @@ androidx-room-paging = { group = "androidx.room", name = "room-paging", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 # Room 编译器
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+
+
 # 测试相关依赖
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidXTestCore" }
@@ -110,6 +112,8 @@ hilt-android-compiler = { group = "com.google.dagger", name = "hilt-compiler", v
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompatVersion" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayoutVersion" }
 
 
 [plugins]

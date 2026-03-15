@@ -2,8 +2,8 @@ package com.hjaquaculture.feature.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjaquaculture.domain.repository.RegisterResult
-import com.hjaquaculture.domain.repository.UserRepository
+import com.hjaquaculture.data.local.repository.UserRepository
+import com.hjaquaculture.feature.home.RegisterResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

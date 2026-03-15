@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.PurchaseInvoice
+import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -19,15 +19,15 @@ interface PurchaseInvoiceDao {
 
     // --- 增加 (Create) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(bill: PurchaseInvoice): Long
+    suspend fun insert(bill: PurchaseInvoiceEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(bills: List<PurchaseInvoice>): List<Long>
+    suspend fun insertAll(bills: List<PurchaseInvoiceEntity>): List<Long>
 
     // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(bill: PurchaseInvoice): Int
+    suspend fun delete(bill: PurchaseInvoiceEntity): Int
 
     @Query("DELETE FROM purchase_invoice WHERE id = :id")
     suspend fun deleteById(id: Long): Int
@@ -47,7 +47,7 @@ interface PurchaseInvoiceDao {
     // --- 修改 (Update) ---
 
     @Update
-    suspend fun update(bill: PurchaseInvoice): Int
+    suspend fun update(bill: PurchaseInvoiceEntity): Int
 
     @Query("UPDATE purchase_invoice SET sn = :sn WHERE id = :id")
     suspend fun updateSn(id: Long, sn: String): Int
@@ -58,39 +58,35 @@ interface PurchaseInvoiceDao {
     suspend fun getCount(): Int
 
     @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
-    fun getAll(): Flow<List<PurchaseInvoice>>
+    fun getAll(): Flow<List<PurchaseInvoiceEntity>>
 
     @Query("SELECT * FROM purchase_invoice WHERE id = :invoiceId")
-    suspend fun getById(invoiceId: Long): PurchaseInvoice
+    suspend fun getById(invoiceId: Long): PurchaseInvoiceEntity
 
-    @Query("SELECT * FROM purchase_invoice WHERE order_id = :orderId")
-    fun getByOrderId(orderId: Long): Flow<List<PurchaseInvoice>>
 
     @Query("SELECT * FROM purchase_invoice WHERE supplier_id = :supplierId")
-    fun getBySupplierId(supplierId: Long): Flow<List<PurchaseInvoice>>
+    fun getBySupplierId(supplierId: Long): Flow<List<PurchaseInvoiceEntity>>
 
-    @Query("SELECT * FROM purchase_invoice WHERE user_id = :userId")
-    fun getByUserId(userId: Long): Flow<List<PurchaseInvoice>>
 
     @Query("SELECT * FROM purchase_invoice WHERE status = :status")
-    fun getByStatus(status: String): Flow<List<PurchaseInvoice>>
+    fun getByStatus(status: String): Flow<List<PurchaseInvoiceEntity>>
 
     @Query("SELECT * FROM purchase_invoice WHERE created_at = :createdAt")
-    fun getByCreatedAt(createdAt: Long): Flow<List<PurchaseInvoice>>
+    fun getByCreatedAt(createdAt: Long): Flow<List<PurchaseInvoiceEntity>>
 
     // --- 更多查询 ---
 
     @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
-    fun getAllForFlow(): Flow<List<PurchaseInvoice>>
+    fun getAllForFlow(): Flow<List<PurchaseInvoiceEntity>>
 
     @Query("SELECT * FROM purchase_invoice WHERE sn = :sn ORDER BY created_at DESC")
-    fun getAllBySnForFlow(sn: String): Flow<List<PurchaseInvoice>>
+    fun getAllBySnForFlow(sn: String): Flow<List<PurchaseInvoiceEntity>>
 
 
     @Query("SELECT * FROM purchase_invoice ORDER BY created_at DESC")
-    fun getAllForPaged(): PagingSource<Int,PurchaseInvoice>
+    fun getAllForPaged(): PagingSource<Int,PurchaseInvoiceEntity>
 
     @Query("SELECT * FROM purchase_invoice WHERE sn = :sn ORDER BY created_at DESC")
-    fun getAllBySnForPaged(sn: String): PagingSource<Int,PurchaseInvoice>
+    fun getAllBySnForPaged(sn: String): PagingSource<Int,PurchaseInvoiceEntity>
 
 }

@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.ProductPriceHistory
+import com.hjaquaculture.data.local.entity.ProductPriceHistoryEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -17,21 +17,21 @@ import kotlinx.coroutines.flow.Flow
 interface ProductPriceHistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(priceHistory: ProductPriceHistory): Long
+    suspend fun insert(priceHistory: ProductPriceHistoryEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(priceHistories: List<ProductPriceHistory>)
+    suspend fun insertAll(priceHistories: List<ProductPriceHistoryEntity>)
 
     // 使用 OnConflictStrategy.REPLACE
     // 如果日期和商品ID冲突了，Room会自动覆盖旧价格，实现“每日最新价”
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdatePrice(priceHistory: ProductPriceHistory)
+    suspend fun insertOrUpdatePrice(priceHistory: ProductPriceHistoryEntity)
 
     @Update
-    suspend fun update(priceHistory: ProductPriceHistory)
+    suspend fun update(priceHistory: ProductPriceHistoryEntity)
 
     @Delete
-    suspend fun delete(priceHistory: ProductPriceHistory)
+    suspend fun delete(priceHistory: ProductPriceHistoryEntity)
 
     @Query("DELETE FROM product_price_history")
     suspend fun deleteAll()
@@ -42,14 +42,14 @@ interface ProductPriceHistoryDao {
      * @return 包含该商品所有价格历史记录的 Flow
      */
     @Query("SELECT * FROM product_price_history WHERE product_id = :productId ORDER BY new_price_date DESC")
-    fun getPriceHistoryForProduct(productId: Long): Flow<List<ProductPriceHistory>>
+    fun getForProduct(productId: Long): Flow<List<ProductPriceHistoryEntity>>
 
     /**
      * 为 Paging 3.0 提供分页数据源，获取所有价格历史记录。
      * @return 返回 PagingSource
      */
     @Query("SELECT * FROM product_price_history ORDER BY new_price_date DESC")
-    fun getPriceHistoryPagingSource(): PagingSource<Int, ProductPriceHistory>
+    fun getPagingSource(): PagingSource<Int, ProductPriceHistoryEntity>
 
     @Query("SELECT COUNT(*) FROM product_price_history")
     suspend fun getCount(): Int

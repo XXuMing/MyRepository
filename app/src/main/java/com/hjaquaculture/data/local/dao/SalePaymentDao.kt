@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.SalePayment
+import com.hjaquaculture.data.local.entity.SalePaymentEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,39 +16,41 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SalePaymentDao {
 
+    // --- 增加 (Create) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(payment: SalePayment): Long
+    suspend fun insert(payment: SalePaymentEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(payments: List<SalePayment>)
+    suspend fun insertAll(payments: List<SalePaymentEntity>)
 
-    @Update
-    suspend fun update(payment: SalePayment)
-
+    // --- 删除 (Delete) ---
     @Delete
-    suspend fun delete(payment: SalePayment)
+    suspend fun delete(payment: SalePaymentEntity)
 
-    @Query("UPDATE sale_payment SET sn = :sn WHERE id = :id")
-    suspend fun updateSn(id: Long, sn: String): Int
+    @Query("DELETE FROM sale_payment WHERE id = :id")
+    suspend fun deleteById(id: Long): Int
 
     @Query("DELETE FROM sale_payment")
     suspend fun deleteAll()
 
-    /**
-     * 【推荐】响应式查询：根据销售发票ID获取其所有的付款记录，并按付款日期降序排序。
-     * @param invoiceId 销售发票的ID
-     * @return 包含该发票所有付款记录的 Flow
-     */
-    @Query("SELECT * FROM sale_payment WHERE invoice_id = :invoiceId ORDER BY payment_time DESC")
-    fun getPaymentsForSaleInvoice(invoiceId: Long): Flow<List<SalePayment>>
+    // --- 修改 (Update) ---
 
-    /**
-     * 为 Paging 3 提供分页数据源，获取所有付款记录。
-     * @return 返回 PagingSource
-     */
-    @Query("SELECT * FROM sale_payment ORDER BY payment_time DESC")
-    fun getSalePaymentsPagingSource(): PagingSource<Int, SalePayment>
+    @Update
+    suspend fun update(payment: SalePaymentEntity)
+
+    @Query("UPDATE sale_payment SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
+
+
+    // --- 查询 (Query) ---
 
     @Query("SELECT COUNT(*) FROM sale_payment")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM sale_payment WHERE invoice_id = :invoiceId ORDER BY payment_time DESC")
+    fun getByInvoiceId(invoiceId: Long): Flow<List<SalePaymentEntity>>
+
+    @Query("SELECT * FROM sale_payment ORDER BY payment_time DESC")
+    fun getPagingSource(): PagingSource<Int, SalePaymentEntity>
+
 }

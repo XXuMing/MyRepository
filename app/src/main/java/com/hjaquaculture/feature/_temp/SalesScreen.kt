@@ -61,7 +61,7 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.flowOf
 
-// 模拟的 SaleOrder 和 SaleOrderItem 数据类
+// 模拟的 SaleOrderEntity 和 SaleOrderItemEntity 数据类
 // 请替换为您项目中的真实数据类
 data class SaleOrder(
     val id: String,

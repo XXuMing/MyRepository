@@ -5,8 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.hjaquaculture.domain.repository.UserRepository
-import com.hjaquaculture.feature.Screen
+import com.hjaquaculture.data.local.repository.UserRepository
+import com.hjaquaculture.feature.ScreenPage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,7 +73,7 @@ class LoginViewModel @Inject constructor(
 
     // 从导航参数中获取注册传来的初始用户名
     // 自动将导航参数映射回 Data Class
-    private val loginArgs = savedStateHandle.toRoute<Screen.Login>()
+    private val loginArgs = savedStateHandle.toRoute<ScreenPage.Login>()
 
     private val _uiState = MutableStateFlow(
         LoginUiState(

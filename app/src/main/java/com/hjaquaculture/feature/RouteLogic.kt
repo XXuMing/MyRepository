@@ -2,26 +2,74 @@ package com.hjaquaculture.feature
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.hjaquaculture.feature.ScreenPage.Home
+import com.hjaquaculture.feature.ScreenPage.Invoice
+import com.hjaquaculture.feature.ScreenPage.Login
+import com.hjaquaculture.feature.ScreenPage.Order
+import com.hjaquaculture.feature.ScreenPage.OrderManagementScreen
+import com.hjaquaculture.feature.ScreenPage.Product
+import com.hjaquaculture.feature.ScreenPage.Register
+import com.hjaquaculture.feature.ScreenPage.Relationship
+import com.hjaquaculture.feature.ScreenPage.Setting
 
+// --- 路由跳转工具 开始 ---
 /**
- * 自定义跳转扩展函数
+ * 导航扩展工具类
  */
-fun NavController.navigateWithPopUp(route: Any) {
-    val startRoute = graph.findStartDestination().route
+
+// 1. 全局单实例模式 (主要用于侧边栏、BottomBar)
+// 逻辑：弹出到起始页以上的所有页面，并复用目标页面。
+// 栈变化：[Home, A, B] -> navigate -> [Home, Target]
+fun NavController.navigateAndCleanStack(route: Any) {
     this.navigate(route) {
-        // 弹出到起始站点，避免堆栈堆积
-        if(startRoute != null){
-            popUpTo(startRoute) {
-                saveState = true
-            }
+        // 弹出到导航图的起始目的地 (通常是 Home)
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
         }
-        // 开启 SingleTop 模式
+        // 避免在栈顶重复创建同一个目标页面
         launchSingleTop = true
-        // 恢复之前保存的状态
+        // 恢复之前在目标页面保存的状态（如滚动位置）
         restoreState = true
     }
-
 }
+
+// 2. 替换当前页模式 (主要用于：登录成功跳转首页、支付成功跳结果页)
+// 逻辑：跳转到新页面的同时，把当前页面从栈里杀掉。
+// 栈变化：[Home, Login] -> navigate -> [Home, Main] (按返回键不会回到 Login)
+fun NavController.navigateAndReplace(route: Any) {
+    val currentRoute = this.currentBackStackEntry?.destination?.route
+    this.navigate(route) {
+        if (currentRoute != null) {
+            popUpTo(currentRoute) {
+                inclusive = true // 包含当前页，一并弹出
+            }
+        }
+    }
+}
+
+// 3. 线性跳转模式 (主要用于：详情页 -> 更多详情)
+// 逻辑：标准的压栈，但开启 singleTop 防止用户由于手抖“连点”产生的重复页面。
+// 栈变化：[A] -> navigate -> [A, B]
+fun NavController.navigateSingleTop(route: Any) {
+    this.navigate(route) {
+        launchSingleTop = true
+    }
+}
+
+// 4. 清理特定路由模式 (主要用于：解决 A-B-A-B 循环)
+// 逻辑：跳转到目标页时，如果栈里已经有这个页面，则把它上方的所有页面全部清空。
+// 栈变化：[Home, A, B, C] -> navigateToExist(A) -> [Home, A]
+fun NavController.navigateToExist(route: Any) {
+    this.navigate(route) {
+        // 弹出到目标页面，inclusive = false 表示不销毁目标页本身，而是回到它
+        popUpTo(route) {
+            inclusive = false
+        }
+        launchSingleTop = true
+    }
+}
+
+// --- 路由跳转工具 结束 ---
 
 
 /**
@@ -29,87 +77,52 @@ fun NavController.navigateWithPopUp(route: Any) {
  */
 class RouteLogic(private val navController: NavController) {
 
-    fun handleTestAction(action: AuthAction.Test){
-
-        when(action){
-            is AuthAction.Test.Home -> {
-                navController.navigate(Screen.Home)
-            }
-            is AuthAction.Test.TempSale -> {
-                navController.navigate(Screen.Test.Sale)
-            }
-            is AuthAction.Test.Filter01 -> {
-                navController.navigate(Screen.Test.Filter01)
-            }
-            is AuthAction.Test.SwipeToReveal01 -> {
-                navController.navigate(Screen.Test.SwipeToReveal01)
-            }
-            is AuthAction.Test.SwipeToReveal02 -> {
-                navController.navigate(Screen.Test.SwipeToReveal02)
-            }
-            is AuthAction.Test.AdaptiveApp -> {
-                navController.navigate(Screen.Test.AdaptiveApp)
-            }
-            is AuthAction.Test.ThreePaneAdaptiveApp -> {
-                navController.navigate(Screen.Test.ThreePaneAdaptiveApp)
-            }
-            is AuthAction.Test.MyAdaptiveApp2 -> {
-                navController.navigate(Screen.Test.MyAdaptiveApp2)
-            }
-            is AuthAction.Test.Sale -> {
-                navController.navigate(Screen.Sale)
-            }
-            is AuthAction.Test.Sale3 -> {
-                navController.navigate(Screen.Test.Sale3)
-            }
-        }
-    }
     /**
      * 处理登录页发出的动作
       */
-    fun handleLoginAction(action: AuthAction.Login) {
+    fun handleAuthAction(action: AuthAction) {
         when (action) {
-            is AuthAction.Login.GoToRegister -> {
-                navController.navigate(Screen.Register)
+            is AuthAction.GoToRegister -> {
+                navController.navigate(Register)
             }
-            is AuthAction.Login.LoginSuccess -> {
+            is AuthAction.LoginSuccess -> {
                 // 登录成功，跳转到 Home，并清空登录栈
-                navController.navigate(Screen.Home){
-                    popUpTo<Screen.Login> { inclusive = true }
+                navController.navigate(Home){
+                    popUpTo<Login> { inclusive = true }
                 }
             }
-            is AuthAction.Login.GotoTestScreen -> {
-                navController.navigate(Screen.Test.Home)
-            }
-        }
-    }
 
-    /**
-     * 处理注册页发出的动作
-     */
-    fun handleRegisterAction(action: AuthAction.Register) {
-        when (action) {
-            is AuthAction.Register.RegisterSuccess -> {
+            is AuthAction.BackToLogin -> {
+                navController.popBackStack()
+            }
+            is AuthAction.RegisterSuccess -> {
                 // 类型安全地传递参数
-                navController.navigate(Screen.Login(initialUsername = action.account)) {
+                navController.navigate(Login(initialUsername = action.account)) {
                     // 核心逻辑：将注册页从栈中弹出
-                    popUpTo<Screen.Register> { inclusive = true }
+                    popUpTo<Register> { inclusive = true }
                     // 确保如果已经在登录页，不会重复创建实例
                     launchSingleTop = true
                 }
             }
-            is AuthAction.Register.BackToLogin -> {
-                navController.popBackStack()
+
+            is AuthAction.OrderManagementScreen -> {
+                navController.navigate(OrderManagementScreen)
             }
         }
     }
 
-    fun handleHomeAction(action: AuthAction.Home) {
+    /**
+     * 处理侧边栏发出的动作
+     */
+    fun handleMenuAction(action: MenuEvent) {
         when(action){
-            is AuthAction.Home.CheckPriceManage -> {}
-            is AuthAction.Home.CheckSalePayment -> {}
-            is AuthAction.Home.CheckShippingUnpaidPending -> {}
-            is AuthAction.Home.CheckPurchaseUnpaidPending -> {}
+            MenuEvent.ToHome -> navController.navigateAndCleanStack(Home)
+            MenuEvent.ToInvoice -> navController.navigateAndCleanStack(Invoice)
+            MenuEvent.ToOrder -> navController.navigateAndCleanStack(Order)
+            MenuEvent.ToProduct -> navController.navigateAndCleanStack(Product)
+            MenuEvent.ToRelationship -> navController.navigateAndCleanStack(Relationship)
+            MenuEvent.ToSetting -> navController.navigateAndCleanStack(Setting)
         }
     }
+
 }

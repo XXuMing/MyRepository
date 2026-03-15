@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.SaleOrder
+import com.hjaquaculture.data.local.entity.SaleOrderEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,51 +16,50 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SaleOrderDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(order: SaleOrder): Long
-
-    /**
-     * 更新订单编号
-     * @param id 订单ID
-     * @param orderSn 新的订单编号
-     */
-    @Query("UPDATE sale_order SET sn = :orderSn WHERE id = :id")
-    suspend fun updateSn(id: Long, orderSn: String): Int
+    // --- 增加 (Create) ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(orders: List<SaleOrder>)
+    suspend fun insert(order: SaleOrderEntity): Long
 
-    @Update
-    suspend fun update(order: SaleOrder)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(orders: List<SaleOrderEntity>)
+
+    // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(order: SaleOrder)
+    suspend fun delete(order: SaleOrderEntity)
 
     @Query("DELETE FROM sale_order")
     suspend fun deleteAll()
 
-    /**
-     * 【推荐】响应式查询：获取所有销售订单，并按订单日期降序排序。
-     * @return 包含所有销售订单列表的 Flow
-     */
-    @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
-    fun getAllSaleOrders(): Flow<List<SaleOrder>>
+    // --- 修改 (Update) ---
 
-    /**
-     * 根据ID获取单个销售订单。
-     * @param orderId 销售订单的ID
-     * @return 返回包含单个销售订单的 Flow，如果不存在则为 null
-     */
-    @Query("SELECT * FROM sale_order WHERE id = :orderId")
-    fun getSaleOrderById(orderId: Long): Flow<SaleOrder?>
+    @Update
+    suspend fun update(order: SaleOrderEntity)
 
-    /**
-     * 为 Paging 3 提供分页数据源，获取所有销售订单。
-     * @return 返回 PagingSource
-     */
-    @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
-    fun getSaleOrdersPagingSource(): PagingSource<Int, SaleOrder>
+    @Query("UPDATE sale_order SET sn = :orderSn WHERE id = :id")
+    suspend fun updateSn(id: Long, orderSn: String): Int
+
+    // --- 查询 (Query) ---
 
     @Query("SELECT COUNT(*) FROM sale_order")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
+    fun getAll(): Flow<List<SaleOrderEntity>>
+
+    // --- 更多查询 ---
+
+    @Query("SELECT * FROM sale_order WHERE id = :orderId")
+    fun getById(orderId: Long): Flow<SaleOrderEntity?>
+
+    @Query("SELECT * FROM sale_order WHERE invoice_id = :invoiceId")
+    fun getByInvoiceId(invoiceId: Long): Flow<List<SaleOrderEntity>>
+
+    @Query("SELECT * FROM sale_order WHERE customer_id = :customerId ORDER BY created_at DESC")
+    fun getByCustomer(customerId: Long): Flow<List<SaleOrderEntity>>
+
+    @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
+    fun getPagingSource(): PagingSource<Int, SaleOrderEntity>
+
 }

@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.PurchaseOrder
+import com.hjaquaculture.data.local.entity.PurchaseOrderEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,55 +16,49 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PurchaseOrderDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(order: PurchaseOrder): Long
+    // --- 增加 (Create) ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(orders: List<PurchaseOrder>)
+    suspend fun insert(order: PurchaseOrderEntity): Long
 
-    @Update
-    suspend fun update(order: PurchaseOrder)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(orders: List<PurchaseOrderEntity>)
+
+    // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(order: PurchaseOrder)
-
-    @Query("UPDATE purchase_order SET sn = :sn WHERE id = :id")
-    suspend fun updateSn(id: Long, sn: String): Int
+    suspend fun delete(order: PurchaseOrderEntity)
 
     @Query("DELETE FROM purchase_order")
     suspend fun deleteAll()
 
-    /**
-     * 根据ID获取单个采购订单。
-     * @param orderId 订单的ID
-     * @return 返回包含单个订单的 Flow
-     */
-    @Query("SELECT * FROM purchase_order WHERE id = :orderId")
-    fun getOrderById(orderId: Long): Flow<PurchaseOrder?>
+    // --- 修改 (Update) ---
+    @Update
+    suspend fun update(order: PurchaseOrderEntity)
 
-    /**
-     * 获取所有采购订单，按日期降序排列。
-     * @return 包含所有订单列表的 Flow
-     */
-    @Query("SELECT * FROM purchase_order ORDER BY order_date DESC")
-    fun getAllOrders(): Flow<List<PurchaseOrder>>
+    @Query("UPDATE purchase_order SET sn = :sn WHERE id = :id")
+    suspend fun updateSn(id: Long, sn: String): Int
 
-    /**
-     * 根据供应商ID获取其所有采购订单。
-     * @param supplierId 供应商的ID
-     * @return 该供应商的所有订单列表 Flow
-     */
-    @Query("SELECT * FROM purchase_order WHERE supplier_id = :supplierId ORDER BY order_date DESC")
-    fun getOrdersBySupplier(supplierId: Long): Flow<List<PurchaseOrder>>
-
-    /**
-     * 为 Paging 3.0 提供分页数据源。
-     * @return 返回 PagingSource
-     */
-    @Query("SELECT * FROM purchase_order ORDER BY order_date DESC")
-    fun getOrdersPagingSource(): PagingSource<Int, PurchaseOrder>
-
+    // --- 查询 (Query) ---
 
     @Query("SELECT COUNT(*) FROM purchase_order")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM purchase_order ORDER BY created_at DESC")
+    fun getAll(): Flow<List<PurchaseOrderEntity>>
+
+    // --- 更多查询 ---
+
+    @Query("SELECT * FROM purchase_order WHERE id = :orderId")
+    fun getById(orderId: Long): Flow<PurchaseOrderEntity?>
+
+    @Query("SELECT * FROM purchase_order WHERE invoice_id = :invoiceId")
+    fun getByInvoiceId(invoiceId: Long): Flow<List<PurchaseOrderEntity>>
+
+    @Query("SELECT * FROM purchase_order WHERE supplier_id = :supplierId ORDER BY created_at DESC")
+    fun getBySupplier(supplierId: Long): Flow<List<PurchaseOrderEntity>>
+
+    @Query("SELECT * FROM purchase_order ORDER BY created_at DESC")
+    fun getPagingSource(): PagingSource<Int, PurchaseOrderEntity>
+
 }

@@ -4,9 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.DatabaseCallback
+import com.hjaquaculture.data.local.LocalDatabase
+import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
+import com.hjaquaculture.data.local.dao.CombinedOrderDao
+import com.hjaquaculture.data.local.dao.CombinedPeopleDao
 import com.hjaquaculture.data.local.dao.CustomerDao
+import com.hjaquaculture.data.local.dao.MeasureUnitDao
 import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
 import com.hjaquaculture.data.local.dao.ProductPriceHistoryDao
@@ -30,6 +34,8 @@ import java.util.concurrent.Executors
 
 /**
  * Hilt 模块，提供数据库相关依赖
+ * 尽量不要在 Application 类中注入 DAO。通常应该在 Repository 中注入 DAO，然后在 ViewModel 中注入 Repository。这样符合架构组件的分层原则。
+ * 后续开发版需要删除此处的Dao
  */
 @Module
 @InstallIn(SingletonComponent::class) // 全局单例
@@ -51,6 +57,11 @@ object DatabaseModule {
         }, Executors.newSingleThreadExecutor())
         //.addCallback(callback)
         .build()
+    }
+
+    @Provides
+    fun provideUnitDao (db: LocalDatabase): MeasureUnitDao {
+        return db.measureUnitDao()
     }
 
     @Provides
@@ -122,4 +133,20 @@ object DatabaseModule {
     fun provideSalePaymentDao (db: LocalDatabase): SalePaymentDao {
         return db.salePaymentDao()
     }
+
+    @Provides
+    fun provideCombinedInvoiceDao (db: LocalDatabase): CombinedInvoiceDao {
+        return db.combinedInvoiceDao()
+    }
+
+    @Provides
+    fun provideCombinedOrderDao (db: LocalDatabase): CombinedOrderDao {
+        return db.combinedOrderDao()
+    }
+
+    @Provides
+    fun provideCombinedPeopleDao (db: LocalDatabase): CombinedPeopleDao {
+        return db.combinedPeopleDao()
+    }
+
 }

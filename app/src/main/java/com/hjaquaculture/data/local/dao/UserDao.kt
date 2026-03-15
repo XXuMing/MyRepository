@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.User
+import com.hjaquaculture.data.local.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,40 +22,38 @@ interface UserDao {
 
     /**
      * 插入单个用户。如果已存在，则替换旧数据。
-     * @param user 要插入的用户对象
+     * @param userEntity 要插入的用户对象
      * @return 返回新插入行的 Row ID，可用于判断是否插入成功
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(user: User): Long
+    suspend fun insert(userEntity: UserEntity): Long
 
     /**
      * 批量插入用户列表。如果已存在，则忽略冲突。
-     * @param users 用户对象列表
+     * @param userEntities 用户对象列表
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(users: List<User>)
-
+    suspend fun insertAll(userEntities: List<UserEntity>)
 
     // --- 更新 (Update) ---
 
     /**
      * 更新单个用户。
-     * @param user 要更新的用户对象
+     * @param userEntity 要更新的用户对象
      * @return 返回受影响的行数，通常为 1
      */
     @Update
-    suspend fun update(user: User): Int
-
+    suspend fun update(userEntity: UserEntity): Int
 
     // --- 删除 (Delete) ---
 
     /**
      * 删除单个用户。
-     * @param user 要删除的用户对象
+     * @param userEntity 要删除的用户对象
      * @return 返回受影响的行数，通常为 1
      */
     @Delete
-    suspend fun delete(user: User): Int
+    suspend fun delete(userEntity: UserEntity): Int
 
     /**
      * 删除表中的所有用户。
@@ -71,8 +69,8 @@ interface UserDao {
      * 返回一个 Flow，当数据变化时，它会自动发射最新的用户列表。非常适合在 UI 层观察。
      * @return 包含所有用户列表的 Flow
      */
-    @Query("SELECT * FROM user ORDER BY username ASC")
-    fun getAllUsers(): Flow<List<User>>
+    @Query("SELECT * FROM user")
+    fun getAll(): Flow<List<UserEntity>>
 
     /**
      * 一次性查询：根据用户 ID 获取单个用户。
@@ -80,8 +78,8 @@ interface UserDao {
      * @param userId 用户的 ID
      * @return 返回用户对象，如果不存在则为 null
      */
-    @Query("SELECT * FROM User WHERE id = :userId")
-    suspend fun getUserById(userId: Int): User?
+    @Query("SELECT * FROM user WHERE id = :userId")
+    suspend fun getById(userId: Int): UserEntity?
 
     /**
      * 一次性查询：根据账户名获取单个用户。
@@ -89,15 +87,15 @@ interface UserDao {
      * @return 返回用户对象，如果不存在则为 null
      */
     @Query("SELECT * FROM User WHERE account = :account")
-    suspend fun getUserByAccount(account: String): User?
+    suspend fun getUserByAccount(account: String): UserEntity?
 
     /**
      * 一次性查询：根据用户名获取单个用户。
      * @param username 用户的名称
      * @return 返回用户对象，如果不存在则为 null
      */
-    @Query("SELECT * FROM User WHERE username = :username")
-    suspend fun getUserByUsername(username: String): User?
+    @Query("SELECT * FROM User WHERE name = :username")
+    suspend fun getByName(username: String): UserEntity?
 
     @Query("SELECT COUNT(*) FROM user")
     suspend fun getCount(): Int

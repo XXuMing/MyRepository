@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.Supplier
+import com.hjaquaculture.data.local.entity.SupplierEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -17,16 +17,16 @@ import kotlinx.coroutines.flow.Flow
 interface SupplierDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(supplier: Supplier): Long
+    suspend fun insert(supplierEntity: SupplierEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(suppliers: List<Supplier>)
+    suspend fun insertAll(supplierEntities: List<SupplierEntity>)
 
     @Update
-    suspend fun update(supplier: Supplier)
+    suspend fun update(supplierEntity: SupplierEntity)
 
     @Delete
-    suspend fun delete(supplier: Supplier)
+    suspend fun delete(supplierEntity: SupplierEntity)
 
     @Query("DELETE FROM supplier")
     suspend fun deleteAll()
@@ -36,7 +36,7 @@ interface SupplierDao {
      * @return 包含所有供应商列表的 Flow
      */
     @Query("SELECT * FROM supplier ORDER BY name ASC")
-    fun getAllSuppliers(): Flow<List<Supplier>>
+    fun getAll(): Flow<List<SupplierEntity>>
 
     /**
      * 根据ID获取单个供应商。
@@ -44,14 +44,14 @@ interface SupplierDao {
      * @return 返回包含单个供应商的 Flow，如果不存在则为 null
      */
     @Query("SELECT * FROM supplier WHERE id = :supplierId")
-    fun getSupplierById(supplierId: Long): Flow<Supplier?>
+    fun getById(supplierId: Long): Flow<SupplierEntity?>
 
     /**
      * 为 Paging 3 提供分页数据源，获取所有供应商。
      * @return 返回 PagingSource
      */
     @Query("SELECT * FROM supplier ORDER BY name ASC")
-    fun getSuppliersPagingSource(): PagingSource<Int, Supplier>
+    fun getPagingSource(): PagingSource<Int, SupplierEntity>
 
     @Query("SELECT COUNT(*) FROM supplier")
     suspend fun getCount(): Int

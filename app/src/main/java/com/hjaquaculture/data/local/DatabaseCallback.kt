@@ -1,27 +1,9 @@
 package com.hjaquaculture.data.local
 
-import android.util.Log
+
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.hjaquaculture.data.local.entity.Customer
-import com.hjaquaculture.data.local.entity.Product
-import com.hjaquaculture.data.local.entity.ProductCategory
-import com.hjaquaculture.data.local.entity.ProductPriceHistory
-import com.hjaquaculture.data.local.entity.PurchaseInvoice
-import com.hjaquaculture.data.local.entity.PurchaseOrder
-import com.hjaquaculture.data.local.entity.PurchaseOrderItem
-import com.hjaquaculture.data.local.entity.PurchasePayment
-import com.hjaquaculture.data.local.entity.SaleInvoice
-import com.hjaquaculture.data.local.entity.SaleOrder
-import com.hjaquaculture.data.local.entity.SaleOrderItem
-import com.hjaquaculture.data.local.entity.SalePayment
-import com.hjaquaculture.data.local.entity.Supplier
-import com.hjaquaculture.data.local.entity.User
-import com.hjaquaculture.common.utils.PaymentMethods
-import com.hjaquaculture.common.utils.PurchaseOrderType
-import com.hjaquaculture.common.utils.SaleOrderStatus
-import com.hjaquaculture.common.utils.SaleOrderType
 import jakarta.inject.Inject
 import jakarta.inject.Provider
 import kotlinx.coroutines.CoroutineScope

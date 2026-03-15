@@ -8,9 +8,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.Product
-import com.hjaquaculture.data.local.entity.ProductCategory
-import com.hjaquaculture.data.local.entity.ProductWithCategory
+import com.hjaquaculture.data.local.entity.ProductCategoryEntity
+import com.hjaquaculture.data.local.entity.ProductEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,15 +17,15 @@ interface ProductDao {
 
     // --- 增加 (Create) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(product: Product): Long
+    suspend fun insert(product: ProductEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(products: List<Product>): List<Long>
+    suspend fun insertAll(products: List<ProductEntity>): List<Long>
 
     // --- 删除 (Delete) ---
 
     @Delete
-    suspend fun delete(product: Product): Int
+    suspend fun delete(product: ProductEntity): Int
 
     @Query("DELETE FROM product WHERE id = :id")
     suspend fun deleteById(id: Long): Int
@@ -37,7 +36,7 @@ interface ProductDao {
     // --- 修改 (Update) ---
 
     @Update
-    suspend fun update(product: Product): Int
+    suspend fun update(product: ProductEntity): Int
 
     // --- 查询 (Query) ---
     @Query("SELECT COUNT(*) FROM product")
@@ -49,7 +48,7 @@ interface ProductDao {
      * @return 返回包含单个商品的 Flow，如果不存在则为 null
      */
     @Query("SELECT * FROM product WHERE id = :productId")
-    suspend fun getById(productId: Long): Product
+    suspend fun getById(productId: Long): ProductEntity
 
     /**
      * 根据分类获取所有商品。
@@ -57,14 +56,14 @@ interface ProductDao {
      * @return 返回该分类下的所有商品列表 Flow
      */
     @Query("SELECT * FROM product WHERE category_id = :categoryId ORDER BY sort ASC")
-    suspend fun getByCategoryId(categoryId: Long): List<Product>
+    suspend fun getByCategoryId(categoryId: Long): List<ProductEntity>
 
     /**
      * 【推荐】响应式查询：获取所有商品，并按分类和排序字段排序。
      * @return 包含所有商品列表的 Flow
      */
     @Query("SELECT * FROM product ORDER BY category_id ASC, sort ASC")
-    fun getAll(): Flow<List<Product>>
+    fun getAll(): Flow<List<ProductEntity>>
 
 
     /**
@@ -77,7 +76,7 @@ interface ProductDao {
         WHERE name LIKE '%' || :name || '%' 
         ORDER BY category_id ASC, sort ASC
         """)
-    fun getByName(name: String): Flow<List<Product>>
+    fun getByName(name: String): Flow<List<ProductEntity>>
 
     // --- 更多查询 ---
     /**
@@ -85,12 +84,12 @@ interface ProductDao {
      * @return 返回 PagingSource
      */
     @Query("SELECT * FROM product ORDER BY category_id ASC, sort ASC")
-    fun getAllForPagingSource(): PagingSource<Int, Product>
+    fun getAllForPagingSource(): PagingSource<Int, ProductEntity>
 
     @Transaction
     @Query("""
         SELECT * FROM product 
         ORDER BY category_id ASC, sort ASC
     """)
-    fun getProductsWithCategoryPaged(): Flow<Map<ProductCategory, List<Product>>>
+    fun getProductsWithCategoryPaged(): Flow<Map<ProductCategoryEntity, List<ProductEntity>>>
 }

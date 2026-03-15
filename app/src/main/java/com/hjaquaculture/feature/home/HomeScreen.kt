@@ -1,6 +1,7 @@
 package com.hjaquaculture.feature.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,19 +10,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,27 +28,30 @@ import com.hjaquaculture.feature.AuthAction
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(onAction = {})
+    // HomeScreen(onAction = {}, scaffoldPadding = PaddingValues(0.dp))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onAction: (AuthAction.Home) -> Unit,
+    onAction: (AuthAction) -> Unit,
+    scaffoldPadding: PaddingValues,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
+        modifier = Modifier.padding(scaffoldPadding).padding(horizontal = 8.dp),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {  }
+                onClick = {
+                    onAction(AuthAction.OrderManagementScreen)
+                }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Reload")
+                Icon(Icons.Default.Add, contentDescription = "销售开单")
             }
         }
     ){
         Column(
-            modifier = Modifier.fillMaxSize()
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
         ) {
 
             Card(

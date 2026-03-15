@@ -40,8 +40,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildFeatures {
@@ -52,7 +52,7 @@ android {
 
 kotlin {
     // 设置 Kotlin 编译器使用的 JVM 版本
-    jvmToolchain(11) // 17 表示 Java 17，您也可以使用 8 (即 1.8), 11 等。
+    jvmToolchain(21) // 17 表示 Java 17，您也可以使用 8 (即 1.8), 11 等。
 }
 
 dependencies {
@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

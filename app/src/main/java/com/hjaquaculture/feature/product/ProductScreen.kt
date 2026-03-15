@@ -32,7 +32,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCard
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -69,13 +68,16 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.hjaquaculture.data.local.entity.Product
+import com.hjaquaculture.R
+import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.feature.AuthAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
@@ -84,28 +86,39 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProductScreen(
-    viewModel: ProductViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier,
+    vm: ProductViewModel = hiltViewModel(),
+    onAction: (AuthAction) -> Unit,
+    scaffoldPadding: PaddingValues,
 ) {
-    val categories by viewModel.uiState.collectAsState()
+    val categories by vm.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        viewModel.moveCategory(from.index, to.index)
+        vm.moveCategory(from.index, to.index)
+    }
+
+    // 列表是否可见，用于延迟加载，改善掉帧
+    var isListVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isListVisible = true // 甚至不需要 delay，这会让出首帧
     }
 
     LaunchedEffect(reorderableState.isAnyItemDragging) {
         if (!reorderableState.isAnyItemDragging) {
-            viewModel.syncOrderToDb()
+            vm.syncOrderToDb()
         }
     }
 
     Scaffold(
         modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = { focusManager.clearFocus() })
-        },
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            }
+            .fillMaxSize()
+            .padding(scaffoldPadding)
+            .padding(horizontal = 8.dp),
         floatingActionButton = {
             Column {
                 FloatingActionButton(onClick = { /* 占位功能 */ }) {
@@ -121,7 +134,7 @@ fun ProductScreen(
                         lazyListState.animateScrollToItem(0)
 
                         // 3. 第二步：添加新分类（此时会触发 UI 刷新，新项出现在 index 0）
-                        viewModel.addNewCategory()
+                        vm.addNewCategory()
 
                         // 4. 第三步：关键延迟
                         // 给 Compose 几毫秒时间去测量新加入的那个 Item 的高度
@@ -133,16 +146,17 @@ fun ProductScreen(
                         lazyListState.animateScrollToItem(0)
                     }
                 }) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Icon(painterResource(R.drawable.contextual_token_add_24px), contentDescription = "添加分类")
                 }
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(){
             OutlinedTextField(
                 value = "",
                 onValueChange = { },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 label = { Text("搜索") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 shape = MaterialTheme.shapes.medium,
@@ -151,39 +165,45 @@ fun ProductScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier.fillMaxSize().imePadding(),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                items(categories, key = { it.category.id }) { item ->
-                    ReorderableItem(reorderableState, key = item.category.id) { isDragging ->
-                        val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
+            if(isListVisible){
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxSize().imePadding(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(
+                        categories,
+                        key = { it.category.id },
+                        contentType = { it.isInitialEditing }
+                    ) { item ->
+                        ReorderableItem(reorderableState, key = item.category.id) { isDragging ->
+                            val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
-                        CategoryGroupCard(
-                            state = item,
-                            modifier = Modifier
-                                .shadow(elevation)
-                                .longPressDraggableHandle()
-                                .clickable {
-                                    focusManager.clearFocus()
-                                    viewModel.toggleCategory(item.category.id)
-                                },
-                            onProductClick = { /* TODO: 跳转商品详情 */ },
-                            onSaveName = { newName ->
-                                val isInitial = item.isInitialEditing
-                                if (isInitial) {
-                                    viewModel.saveCategory(item.category.id, newName)
-                                    // 重点修复：保存新分类后，自动滚动到顶端
-                                    scope.launch {
-                                        delay(150) // 等待数据库写入和 UI 重排完成
-                                        lazyListState.animateScrollToItem(0)
+                            CategoryGroupCard(
+                                state = item,
+                                modifier = Modifier
+                                    .shadow(elevation)
+                                    .longPressDraggableHandle()
+                                    .clickable {
+                                        focusManager.clearFocus()
+                                        vm.toggleCategory(item.category.id)
+                                    },
+                                onProductClick = { /* TODO: 跳转商品详情 */ },
+                                onSaveName = { newName ->
+                                    val isInitial = item.isInitialEditing
+                                    if (isInitial) {
+                                        vm.saveCategory(item.category.id, newName)
+                                        // 重点修复：保存新分类后，自动滚动到顶端
+                                        scope.launch {
+                                            delay(150) // 等待数据库写入和 UI 重排完成
+                                            lazyListState.animateScrollToItem(0)
+                                        }
+                                    } else {
+                                        vm.saveCategoryName(item.category.id, newName)
                                     }
-                                } else {
-                                    viewModel.saveCategoryName(item.category.id, newName)
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -357,7 +377,7 @@ fun EditableText(
 }
 
 @Composable
-private fun ProductItemButton(product: Product, onClick: (Long) -> Unit) {
+private fun ProductItemButton(product: ProductEntity, onClick: (Long) -> Unit) {
     val focusManager = LocalFocusManager.current
     OutlinedButton(
         onClick = {

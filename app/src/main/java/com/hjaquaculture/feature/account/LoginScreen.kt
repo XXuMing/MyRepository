@@ -1,6 +1,5 @@
 package com.hjaquaculture.feature.account
 
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +45,7 @@ import com.hjaquaculture.feature.AuthAction
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onAction: (AuthAction.Login) -> Unit,
+    onAction: (AuthAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val titleColor = if (isSystemInDarkTheme()) Color.White else Color.Black
@@ -61,7 +60,7 @@ fun LoginScreen(
     // 状态机监听：一旦状态变为 Success，触发导航 Action
     LaunchedEffect(state.loginStatus) {
         if (state.loginStatus is LoginStatus.LoginSuccess) {
-            onAction(AuthAction.Login.LoginSuccess)
+            onAction(AuthAction.LoginSuccess)
         }
     }
 
@@ -69,7 +68,7 @@ fun LoginScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    onAction(AuthAction.Login.GoToRegister)
+                    onAction(AuthAction.GoToRegister)
                 }
             ){
                 Icon(Icons.Outlined.Add, contentDescription = "注册")
@@ -130,13 +129,10 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { onAction(AuthAction.Login.LoginSuccess) }
+                    onClick = { onAction(AuthAction.LoginSuccess) }
                 )
                 {
                     Text(text = "登录", modifier = Modifier.padding(horizontal = 32.dp))
-                }
-                Button({onAction(AuthAction.Login.GotoTestScreen)}) {
-                    Text("TestScreen")
                 }
             }
         }

@@ -2,9 +2,9 @@ package com.hjaquaculture.feature.product
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjaquaculture.data.local.entity.Product
-import com.hjaquaculture.data.local.entity.ProductCategory
-import com.hjaquaculture.domain.repository.ProductRepository
+import com.hjaquaculture.data.local.entity.ProductCategoryEntity
+import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.data.local.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,7 +22,7 @@ class ProductViewModel @Inject constructor(
     private val repository: ProductRepository
 ) : ViewModel() {
 
-    private val _loadedProducts = MutableStateFlow<Map<Long, List<Product>>>(emptyMap())
+    private val _loadedProducts = MutableStateFlow<Map<Long, List<ProductEntity>>>(emptyMap())
     private val _expandedId = MutableStateFlow<Long?>(null)
 
     // 专门存放“新创建、未保存”分类的流
@@ -70,7 +71,8 @@ class ProductViewModel @Inject constructor(
                 isLoadingProducts = vo.isExpanded && !hasData
             )
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.flowOn(Dispatchers.Default) // 由于页面有些卡顿，改为：排序和过滤不占主线程
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
     fun toggleCategory(categoryId: Long) {
@@ -110,7 +112,7 @@ class ProductViewModel @Inject constructor(
 
             // 为了让它在最前面，新项的 sort 应该比当前最小的还要小
             // 或者更简单的做法：插入后统一调用一次 syncOrderToDb 重新刷一遍 index
-            repository.addCategory(ProductCategory(name = finalName, sort = minSort - 1))
+            repository.addCategory(ProductCategoryEntity(name = finalName, sort = minSort - 1))
 
             _reorderSortOrder.value = emptyList()
 
@@ -125,7 +127,7 @@ class ProductViewModel @Inject constructor(
         // 使用负数 ID 或大时间戳标记临时项
         val tempId = System.currentTimeMillis()
         val newCategory = CategoryWithProductsVO(
-            category = ProductCategory(id = tempId, name = "", sort = -1), // 给予最小 sort 预设
+            category = ProductCategoryEntity(id = tempId, name = "", sort = -1), // 给予最小 sort 预设
             isInitialEditing = true
         )
         // 核心修改：确保它在临时列表的首位
