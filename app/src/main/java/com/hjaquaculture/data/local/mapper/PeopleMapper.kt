@@ -1,8 +1,10 @@
 package com.hjaquaculture.data.local.mapper
 
+import com.hjaquaculture.data.local.entity.CombinedPeopleView
 import com.hjaquaculture.data.local.entity.CustomerEntity
 import com.hjaquaculture.data.local.entity.SupplierEntity
 import com.hjaquaculture.data.local.entity.UserEntity
+import com.hjaquaculture.domain.model.CombinedPeople
 import com.hjaquaculture.domain.model.Customer
 import com.hjaquaculture.domain.model.Supplier
 import com.hjaquaculture.domain.model.User
@@ -101,6 +103,24 @@ fun Supplier.toEntity(): SupplierEntity {
         nickName = this.nickName,
         phone = this.phone,
         address = this.address,
+        createdAt = this.createdAt
+    )
+}
+
+/**
+ * CombinedPeopleMapper
+ */
+
+fun CombinedPeopleView.toDomain(): CombinedPeople {
+    return CombinedPeople(
+        symbol = this.symbol,
+        id = this.id,
+        name = this.name,
+        phone = this.phone ?: "",
+        account = this.account ?: "",
+        nickName = this.nickName ?: "",
+        role = this.role ?: "",
+        address = this.address ?: "",
         createdAt = this.createdAt
     )
 }

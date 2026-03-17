@@ -1,12 +1,16 @@
 package com.hjaquaculture.feature.order
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
+import com.hjaquaculture.common.utils.OrderSymbol
 import com.hjaquaculture.data.local.repository.OrderRepository
 import com.hjaquaculture.data.local.repository.PurchaseOrderRepository
 import com.hjaquaculture.data.local.repository.SaleOrderRepository
+import com.hjaquaculture.domain.model.OrderItemsData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,12 +33,20 @@ class OrderViewModel @Inject constructor(
     private val orderRepo: OrderRepository,
     private val saleOrderRepo: SaleOrderRepository,
     private val purOrderRepo: PurchaseOrderRepository
-) : ViewModel(){
+) : ViewModel() {
 
     // 订单分页数据
-    val orderList: Flow<PagingData<OrderVO>> = orderRepo.getCombinedOrders("",null,null,null)
-        .cachedIn(viewModelScope)
-
+    val orderList: Flow<PagingData<OrderVO>> =
+        orderRepo.getCombinedOrders("", null, null, null).map { pagingData ->
+            pagingData.map { domain ->
+                try {
+                    domain.toVO()
+                } catch (e: Exception) {
+                    Log.e("VO_ERROR", "转换失败，数据条目ID: ${domain.id}", e)
+                    throw e
+                }
+            }
+        }.cachedIn(viewModelScope)
 
     // 1. 驱动源：当前哪个订单被展开了
     private val _expandedOrderItem = MutableStateFlow<OrderVO?>(null)
@@ -48,9 +60,15 @@ class OrderViewModel @Inject constructor(
                 flowOf(OrderDetailResult.Keep)
             } else {
                 // 当 ID 变化，这里会自动开启新的数据库监听
-                orderRepo.getOrderItems(vo.symbol,vo.originalId)
-                .map {
-                    OrderDetailResult.Success(it) as OrderDetailResult
+                orderRepo.getOrderDetail(vo.symbol,vo.originalId)
+                .map { orderItems ->
+                    val voItems = when(orderItems) {
+                        is OrderItemsData.Sale -> orderItems.data.map { it.toVO(OrderSymbol.SALE) }
+                        is OrderItemsData.Purchase -> orderItems.data.map { it.toVO(OrderSymbol.PURCHASE) }
+                        is OrderItemsData.Error -> TODO()
+                    }
+
+                    OrderDetailResult.Success(voItems) as OrderDetailResult
                 }
                 .onStart {
                     emit(OrderDetailResult.Loading)
@@ -108,7 +126,6 @@ data class OrderDetailState(
     val isIdle: Boolean = true                  // 是否初始空闲
 )
 
-
 // 定义内部使用的中间结果
 sealed class OrderDetailResult {
     object Reset : OrderDetailResult()
@@ -117,6 +134,3 @@ sealed class OrderDetailResult {
     data class Success(val data: List<OrderItemVO>) : OrderDetailResult()
     data class Error(val message: String) : OrderDetailResult()
 }
-
-
-

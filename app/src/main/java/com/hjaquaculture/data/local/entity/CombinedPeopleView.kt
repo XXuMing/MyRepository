@@ -11,7 +11,7 @@ import com.hjaquaculture.common.utils.PeopleSymbol
  * @param name 名称
  * @param phone 手机号
  * @param account 账号
- * @param nikeName 昵称
+ * @param nickName 昵称
  * @param role 角色
  * @param address 地址
  * @param createdAt 创建时间
@@ -22,7 +22,7 @@ import com.hjaquaculture.common.utils.PeopleSymbol
 SELECT 'USER' AS symbol ,
     id , name , phone , created_at , address ,
     account ,
-    NULL AS nike_name ,
+    NULL AS nick_name ,
     role 
 FROM user
 
@@ -38,7 +38,7 @@ UNION ALL
 SELECT 'SUPPLIER' AS symbol ,
     id , name , phone , created_at , address ,
     NULL AS account ,
-    NULL AS nike_name ,
+    NULL AS nick_name ,
     NULL AS role 
 FROM supplier
 """
@@ -59,8 +59,8 @@ data class CombinedPeopleView(
     @ColumnInfo("account")
     val account: String?,
 
-    @ColumnInfo("nike_name")
-    val nikeName: String?,
+    @ColumnInfo("nick_name")
+    val nickName: String?,
 
     @ColumnInfo("role")
     val role: String?,

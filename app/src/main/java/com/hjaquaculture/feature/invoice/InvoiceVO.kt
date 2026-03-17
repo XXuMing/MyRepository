@@ -3,7 +3,7 @@ package com.hjaquaculture.feature.invoice
 import androidx.compose.runtime.Immutable
 import com.hjaquaculture.common.utils.InvoiceSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
-import com.hjaquaculture.data.local.entity.CombinedInvoiceView
+import com.hjaquaculture.domain.model.CombinedInvoice
 
 /**
  * 发票概要 视图对象
@@ -47,13 +47,13 @@ data class InvoiceVO(
     val isDetailsExpanded: Boolean = false,
 )
 
-fun CombinedInvoiceView.toVO(): InvoiceVO{
+fun CombinedInvoice.toVO(): InvoiceVO{
     return InvoiceVO(
         symbol = symbol,
         symbolDescription = symbol.description,
         syntheticId = "${symbol.dbValue}_$id",
         originalId = id,
-        sn = sn?:"无单号",
+        sn = sn,
 
         creatorId = creatorId,
         creatorName = creatorName,

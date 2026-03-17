@@ -1,9 +1,11 @@
 package com.hjaquaculture.data.local.mapper
 
+import com.hjaquaculture.data.local.entity.CombinedOrderView
 import com.hjaquaculture.data.local.entity.PurchaseOrderEntity
 import com.hjaquaculture.data.local.entity.PurchaseOrderItemEntity
 import com.hjaquaculture.data.local.entity.SaleOrderEntity
 import com.hjaquaculture.data.local.entity.SaleOrderItemEntity
+import com.hjaquaculture.domain.model.CombinedOrder
 import com.hjaquaculture.domain.model.PurchaseOrder
 import com.hjaquaculture.domain.model.PurchaseOrderItem
 import com.hjaquaculture.domain.model.SaleOrder
@@ -166,5 +168,28 @@ fun PurchaseOrderItem.toEntity(): PurchaseOrderItemEntity {
         unitPrice = this.unitPrice,
         subtotal = this.subtotal,
         createdAt = this.createdAt
+    )
+}
+
+/**
+ * CombinedOrderMapper
+ */
+
+fun CombinedOrderView.toDomain(): CombinedOrder {
+    return CombinedOrder(
+        symbol = this.symbol,
+        id = this.id,
+        sn = this.sn ?: "NO-SN",
+        partnerId = this.partnerId,
+        partnerName = this.partnerName,
+        creatorId = this.creatorId,
+        creatorName = this.creatorName,
+        orderType = this.orderType,
+        orderStatus = this.orderStatus,
+        totalPrice = this.totalPrice,
+        totalQuantity = this.totalQuantity,
+        remark = this.remark,
+        createdAt = this.createdAt,
+        expiredAt = this.expiredAt
     )
 }

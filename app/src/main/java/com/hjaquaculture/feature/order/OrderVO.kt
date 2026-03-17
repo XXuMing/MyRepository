@@ -3,9 +3,9 @@ package com.hjaquaculture.feature.order
 import androidx.compose.runtime.Immutable
 import com.hjaquaculture.common.utils.OrderSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
-import com.hjaquaculture.data.local.entity.CombinedOrderView
-import com.hjaquaculture.data.local.entity.PurchaseOrderItemEntity
-import com.hjaquaculture.data.local.entity.SaleOrderItemEntity
+import com.hjaquaculture.domain.model.CombinedOrder
+import com.hjaquaculture.domain.model.PurchaseOrderItem
+import com.hjaquaculture.domain.model.SaleOrderItem
 
 
 /**
@@ -54,13 +54,13 @@ data class OrderVO(
 /**
  * 将 CombinedOrderView 转换为 OrderVO
  */
-fun CombinedOrderView.toVO(): OrderVO{
+fun CombinedOrder.toVO(): OrderVO{
     return OrderVO(
         symbol = symbol,
         symbolDescription = symbol.description,
         syntheticId = "${symbol.dbValue}_$id",
         originalId = id,
-        sn = sn?:"无单号",
+        sn = sn,
 
         creatorId = creatorId,
         creatorName = creatorName,
@@ -82,6 +82,7 @@ fun CombinedOrderView.toVO(): OrderVO{
  * 订单明细 视图对象
  */
 data class OrderItemVO(
+    val symbol: OrderSymbol,
     val id: Long,
     val orderId: Long,
     val productId: Long,
@@ -98,8 +99,9 @@ data class OrderItemVO(
 /**
  * 将 SaleOrderItemEntity 转换为 OrderItemVO
  */
-fun SaleOrderItemEntity.toVO(): OrderItemVO {
+fun SaleOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
     return OrderItemVO(
+        symbol = symbol,
         id = id,
         orderId = orderId,
         productId = productId,
@@ -117,8 +119,9 @@ fun SaleOrderItemEntity.toVO(): OrderItemVO {
 /**
  * 将 PurchaseOrderItemEntity 转换为 OrderItemVO
  */
-fun PurchaseOrderItemEntity.toVO(): OrderItemVO {
+fun PurchaseOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
     return OrderItemVO(
+        symbol = symbol,
         id = id,
         orderId = orderId,
         productId = productId,

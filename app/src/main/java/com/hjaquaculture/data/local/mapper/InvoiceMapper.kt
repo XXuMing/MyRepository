@@ -1,8 +1,10 @@
 package com.hjaquaculture.data.local.mapper
 
+import com.hjaquaculture.data.local.entity.CombinedInvoiceView
 import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity
 import com.hjaquaculture.data.local.entity.SaleInvoiceEntity
 import com.hjaquaculture.data.local.entity.SalePaymentEntity
+import com.hjaquaculture.domain.model.CombinedInvoice
 import com.hjaquaculture.domain.model.PurchaseInvoice
 import com.hjaquaculture.domain.model.SaleInvoice
 import com.hjaquaculture.domain.model.SalePayment
@@ -113,5 +115,27 @@ fun PurchaseInvoice.toEntity(): PurchaseInvoiceEntity {
         remark = this.remark,
         createdAt = this.createdAt,
         isDeleted = this.isDeleted
+    )
+}
+
+/**
+ * CombinedInvoiceMapper
+ */
+
+fun CombinedInvoiceView.toDomain(): CombinedInvoice {
+    return CombinedInvoice(
+        symbol = this.symbol,
+        id = this.id,
+        sn = this.sn ?: "N/A",
+        partnerId = this.partnerId,
+        partnerName = this.partnerName,
+        creatorId = this.creatorId,
+        creatorName = this.creatorName,
+        amountTotal = this.amountTotal,
+        amountPaid = this.amountPaid,
+        amountRem = this.amountRem,
+        status = this.status,
+        remark = this.remark ?: "",
+        createdAt = this.createdAt
     )
 }

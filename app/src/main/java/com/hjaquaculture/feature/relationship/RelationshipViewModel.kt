@@ -18,8 +18,8 @@ class RelationshipViewModel @Inject constructor(
 
     val relationshipPagingData: Flow<PagingData<PeopleVO>> = repo.getCombinedPeople("",null)
         .map { pagingData ->
-            pagingData.map { view ->
-                 view.toVO()
+            pagingData.map { domain ->
+                 domain.toVO()
             }
         }.cachedIn(viewModelScope)
 }

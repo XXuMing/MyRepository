@@ -20,11 +20,11 @@ class InvoiceViewModel @Inject constructor(
     // 使用 cachedIn 确保在配置更改（如旋屏）时数据不丢失，且避免重复转换
     val invoicePagingData: Flow<PagingData<InvoiceVO>> = repo.getCombinedInvoices("",null,null)
     .map { pagingData ->
-        pagingData.map { view ->
+        pagingData.map { domain ->
             try {
-                view.toVO()
+                domain.toVO()
             } catch (e: Exception) {
-                Log.e("VO_ERROR", "转换失败，数据条目ID: ${view.id}", e)
+                Log.e("VO_ERROR", "转换失败，数据条目ID: ${domain.id}", e)
                 throw e
             }
         }

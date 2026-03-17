@@ -17,7 +17,7 @@ interface CombinedPeopleDao {
             :query = '' OR
             account LIKE '%' || :query || '%' OR
             name LIKE '%' || :query || '%' OR
-            nike_name LIKE '%' || :query || '%' OR
+            nick_name LIKE '%' || :query || '%' OR
             phone LIKE '%' || :query || '%' OR
             role LIKE '%' || :query || '%'
         )

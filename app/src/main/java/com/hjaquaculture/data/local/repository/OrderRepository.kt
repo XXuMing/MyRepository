@@ -10,9 +10,9 @@ import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao
 import com.hjaquaculture.data.local.dao.SaleOrderDao
 import com.hjaquaculture.data.local.dao.SaleOrderItemDao
-import com.hjaquaculture.feature.order.OrderItemVO
-import com.hjaquaculture.feature.order.OrderVO
-import com.hjaquaculture.feature.order.toVO
+import com.hjaquaculture.data.local.mapper.toDomain
+import com.hjaquaculture.domain.model.CombinedOrder
+import com.hjaquaculture.domain.model.OrderItemsData
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +30,7 @@ class OrderRepository @Inject constructor(
      * 获取所有订单的组合视图
      */
     fun getCombinedOrders(query: String, symbol: String?, type: String?, status:String?)
-    : Flow<PagingData<OrderVO>>
+    : Flow<PagingData<CombinedOrder>>
     {
         return Pager(
             config = PagingConfig(
@@ -40,21 +40,24 @@ class OrderRepository @Inject constructor(
             ),
             pagingSourceFactory = { combinedDao.getPagingSource(query, symbol, type, status)}
         ).flow.map{ pagingData ->
-            pagingData.map{ view ->
-                view.toVO()
-            }
+            pagingData.map { it.toDomain() }
         }
     }
 
-    fun getOrderItems(symbol: OrderSymbol, orderId: Long): Flow<List<OrderItemVO>> {
-        return when (symbol.dbValue) {
-            OrderSymbol.SALE.dbValue -> saleItemDao.getForSaleOrder(orderId).map{
-                it.map { item -> item.toVO() }
+    /**
+     * 获取订单详情
+     * 逻辑：根据订单类型返回不同的 Flow
+     * @param symbol 订单类型
+     * @param orderId 订单 ID
+     */
+    fun getOrderDetail(symbol: OrderSymbol, orderId: Long): Flow<OrderItemsData> {
+        return when (symbol) {
+            OrderSymbol.SALE -> saleItemDao.getForSaleOrder(orderId).map{ list ->
+                OrderItemsData.Sale(list.map { it.toDomain() })
             }
-            OrderSymbol.PURCHASE.dbValue -> purItemDao.getForPurchaseOrder(orderId).map{
-                it.map { item -> item.toVO() }
+            OrderSymbol.PURCHASE -> purItemDao.getForPurchaseOrder(orderId).map{ list ->
+                OrderItemsData.Purchase(list.map { it.toDomain() })
             }
-            else -> throw IllegalArgumentException("Invalid symbol: $symbol")
         }
     }
 
