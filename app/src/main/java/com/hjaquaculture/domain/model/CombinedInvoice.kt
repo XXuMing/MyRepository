@@ -45,3 +45,12 @@ data class CombinedInvoice(
     val paymentProgress: Int
         get() = if (amountTotal == 0L) 100 else ((amountPaid.toDouble() / amountTotal) * 100).toInt()
 }
+
+
+/**
+ * 账单详情的封装容器
+ */
+sealed class InvoicePaymentsData {
+    data class Sale(val data: List<SalePayment>) : InvoicePaymentsData()
+    data class Purchase(val data: List<PurchasePayment>) : InvoicePaymentsData()
+}

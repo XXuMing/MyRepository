@@ -208,7 +208,7 @@ class App : Application(){
                     amountRem = 0, remark = "测试账单备注")
                 saleInvoiceRepository.add(saleInvoiceEntity)
                 for (j in 1..5){
-                    val salePaymentEntity = SalePaymentEntity(invoiceId = i.toLong(), customerId = i.toLong(), amount = 100, paymentMethods = PaymentMethods.CASH)
+                    val salePaymentEntity = SalePaymentEntity(invoiceId = i.toLong(), sn = "TEST1234567${i}${j}", customerId = i.toLong(), amount = 100, paymentMethods = PaymentMethods.CASH)
                     salePaymentDao.insert(salePaymentEntity)
                 }
             }
@@ -263,7 +263,7 @@ class App : Application(){
                 )
                 purchaseInvoiceRepository.add(purchaseInvoiceEntity)
                 for (j in 1..5){
-                    val purchasePaymentEntity = PurchasePaymentEntity(invoiceId = i.toLong(), supplierId = i.toLong(), amount = 100, paymentMethods = PaymentMethods.CASH)
+                    val purchasePaymentEntity = PurchasePaymentEntity(invoiceId = i.toLong(), sn = "TEST1234567${i}${j}", supplierId = i.toLong(), amount = 100, paymentMethods = PaymentMethods.CASH)
                     purchasePaymentDao.insert(purchasePaymentEntity)
                 }
                 Log.d("DB_Callback", "PurchaseInvoice测试数据填充完毕")

@@ -2,10 +2,12 @@ package com.hjaquaculture.data.local.mapper
 
 import com.hjaquaculture.data.local.entity.CombinedInvoiceView
 import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity
+import com.hjaquaculture.data.local.entity.PurchasePaymentEntity
 import com.hjaquaculture.data.local.entity.SaleInvoiceEntity
 import com.hjaquaculture.data.local.entity.SalePaymentEntity
 import com.hjaquaculture.domain.model.CombinedInvoice
 import com.hjaquaculture.domain.model.PurchaseInvoice
+import com.hjaquaculture.domain.model.PurchasePayment
 import com.hjaquaculture.domain.model.SaleInvoice
 import com.hjaquaculture.domain.model.SalePayment
 
@@ -59,8 +61,7 @@ fun SalePaymentEntity.toDomain(): SalePayment {
         sn = this.sn ?: "PAY-N/A",
         invoiceId = this.invoiceId,
         customerId = this.customerId,
-        // 如果 Entity 是 Int，转换为 Domain 的 Long
-        amount = this.amount.toLong(),
+        amount = this.amount,
         paymentTime = this.paymentTime,
         paymentMethods = this.paymentMethods
     )
@@ -118,6 +119,33 @@ fun PurchaseInvoice.toEntity(): PurchaseInvoiceEntity {
     )
 }
 
+/**
+ * PurchasePaymentMapper
+ */
+
+fun PurchasePaymentEntity.toDomain(): PurchasePayment {
+    return PurchasePayment(
+        id = this.id,
+        sn = this.sn ?: "P-PAY-N/A",
+        invoiceId = this.invoiceId,
+        supplierId = this.supplierId,
+        amount = this.amount,
+        paymentTime = this.paymentTime,
+        paymentMethods = this.paymentMethods
+    )
+}
+
+fun PurchasePayment.toEntity(): PurchasePaymentEntity {
+    return PurchasePaymentEntity(
+        id = this.id,
+        sn = this.sn,
+        invoiceId = this.invoiceId,
+        supplierId = this.supplierId,
+        amount = this.amount,
+        paymentTime = this.paymentTime,
+        paymentMethods = this.paymentMethods
+    )
+}
 /**
  * CombinedInvoiceMapper
  */

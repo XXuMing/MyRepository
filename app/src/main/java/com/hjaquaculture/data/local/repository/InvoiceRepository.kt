@@ -4,13 +4,17 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.hjaquaculture.common.utils.InvoiceSymbol
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
+import com.hjaquaculture.data.local.dao.PurchasePaymentDao
 import com.hjaquaculture.data.local.dao.SaleInvoiceDao
 import com.hjaquaculture.data.local.dao.SaleOrderDao
+import com.hjaquaculture.data.local.dao.SalePaymentDao
 import com.hjaquaculture.data.local.mapper.toDomain
 import com.hjaquaculture.domain.model.CombinedInvoice
+import com.hjaquaculture.domain.model.InvoicePaymentsData
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +26,9 @@ class InvoiceRepository @Inject constructor(
     private val soDao: SaleOrderDao,
     private val poDao: PurchaseOrderDao,
     private val siDao: SaleInvoiceDao,
-    private val piDao: PurchaseInvoiceDao
+    private val piDao: PurchaseInvoiceDao,
+    private val spDao: SalePaymentDao,
+    private val ppDao: PurchasePaymentDao,
 ){
 
     fun getCombinedInvoices(query: String, symbol: String?, status:String?): Flow<PagingData<CombinedInvoice>> {
@@ -38,5 +44,15 @@ class InvoiceRepository @Inject constructor(
         }
     }
 
+    fun getInvoiceDetail(symbol: InvoiceSymbol, invoiceId: Long): Flow<InvoicePaymentsData> {
+        return when (symbol) {
+            InvoiceSymbol.SALE -> spDao.getByInvoiceId(invoiceId).map { list ->
+                InvoicePaymentsData.Sale(list.map{ it.toDomain()})
+            }
+            InvoiceSymbol.PURCHASE -> ppDao.getByInvoiceId(invoiceId).map{ list ->
+                InvoicePaymentsData.Purchase(list.map{ it.toDomain()})
+            }
+        }
+    }
 
 }

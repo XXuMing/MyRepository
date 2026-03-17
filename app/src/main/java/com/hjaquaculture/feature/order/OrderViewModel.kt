@@ -65,7 +65,6 @@ class OrderViewModel @Inject constructor(
                     val voItems = when(orderItems) {
                         is OrderItemsData.Sale -> orderItems.data.map { it.toVO(OrderSymbol.SALE) }
                         is OrderItemsData.Purchase -> orderItems.data.map { it.toVO(OrderSymbol.PURCHASE) }
-                        is OrderItemsData.Error -> TODO()
                     }
 
                     OrderDetailResult.Success(voItems) as OrderDetailResult

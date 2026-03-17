@@ -2,6 +2,7 @@ package com.hjaquaculture.feature.order
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +48,7 @@ fun OrderScreen(
     val detailState by vm.detailState.collectAsStateWithLifecycle()
 
 
+    Spacer(Modifier.height(8.dp))
     LazyColumn(
         modifier = Modifier.padding(scaffoldPadding)
     ) {
@@ -58,8 +61,9 @@ fun OrderScreen(
                 orderVO = listItems[index] ?: return@items,
                 isExpanded = isExpanded,
                 detailState = detailState,
-                onToggle = { vm.toggleOrder(listItems[index] ?: return@OrderCard)}
+                onToggle = {  vm.toggleOrder(listItems[index] ?: return@OrderCard) }
             )
+            Spacer(Modifier.height(8.dp))
         }
     }
 
@@ -73,10 +77,13 @@ fun OrderCard(
 ) {
     ElevatedCard(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
             .clickable { onToggle() }, // 触发外部状态改变
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 22.dp,
+            focusedElevation = 10.dp
+        )
     ) {
         Column(
             modifier = Modifier
@@ -124,19 +131,20 @@ fun OrderCard(
             // 【关键部分】：处理明细展示逻辑
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = fadeIn() + expandVertically(), // 组合：淡入 + 垂直展开
-                // exit = shrinkVertically(animationSpec = tween(300)) + fadeOut()
-                exit = fadeOut() + shrinkVertically()  // 组合：淡出 + 垂直收缩
+                enter = fadeIn(animationSpec = tween(150)) + expandVertically(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(120)) + shrinkVertically(animationSpec = tween(120))
             ) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                Column(modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalDivider(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
-
                         // 第一层：数据层（只要有数据就显示）
                         Column {
                             if (detailState.items.isNotEmpty()) {
                                 detailState.items.forEach { item ->
-                                    DetailItemRow(item)
+                                    key(item.id) {
+                                        DetailItemRow(item)
+                                    }
+                                    Spacer(Modifier.height(4.dp))
                                 }
                             } else if (!detailState.isLoading && !detailState.isIdle && detailState.error == null) {
                                 // 只有在加载完成、没数据、没报错的情况下才显示“暂无”
@@ -178,11 +186,14 @@ fun OrderCard(
 @Composable
 fun DetailItemRow(item: OrderItemVO) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(item.productName, modifier = Modifier.weight(1f))
-        Text("${item.quantity} x ¥${item.unitPrice / 100.0}", style = MaterialTheme.typography.bodyMedium)
-        Text("= ¥${item.subtotal / 100.0}", fontWeight = FontWeight.SemiBold)
+        Text(item.productName, modifier = Modifier.weight(1f),style = MaterialTheme.typography.bodyMedium,)
+        Text("${item.quantity} x ¥${item.unitPrice / 100.0}",style = MaterialTheme.typography.bodyMedium,)
+        Text("= ¥${item.subtotal / 100.0}", style = MaterialTheme.typography.bodyMedium,fontWeight = FontWeight.SemiBold)
     }
 }

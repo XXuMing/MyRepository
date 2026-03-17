@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import com.hjaquaculture.common.utils.InvoiceSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
 import com.hjaquaculture.domain.model.CombinedInvoice
+import com.hjaquaculture.domain.model.PurchasePayment
+import com.hjaquaculture.domain.model.SalePayment
 
 /**
  * 发票概要 视图对象
@@ -71,27 +73,28 @@ fun CombinedInvoice.toVO(): InvoiceVO{
     )
 }
 
-/**
- * 采购明细概要 视图对象
- * @param id 主键
- * @param orderId 采购订单ID
- * @param productId 商品ID
- * @param quantity 数量
- * @param unit 单位（件、箱、袋）
- * @param weight 重量（斤）
- * @param unitPrice 单价（元）
- * @param subtotal 小计（元）
- */
+// ---- 流水 VO ----
 @Immutable
 data class PaymentItemVO(
-    val id : Long,
-    val orderId: Long,
-    val productId: Long,
+    val id: Long,
+    val sn: String,
+    val amount: String,       // 已格式化（元）
+    val paymentTime: String,  // 已格式化（yyyy-MM-dd HH:mm）
+    val paymentMethod: String // 支付方式描述
+)
 
-    val productName: String,
-    val quantity: String,
-    val unit: String,
-    val weight: String,
-    val unitPrice: String,
-    val subtotal:String
+fun SalePayment.toVO(): PaymentItemVO = PaymentItemVO(
+    id = id,
+    sn = sn,
+    amount = "¥${"%.2f".format(amount / 100.0)}",
+    paymentTime = paymentTime.toFormattedString("yyyy-MM-dd HH:mm"),
+    paymentMethod = paymentMethods.description
+)
+
+fun PurchasePayment.toVO(): PaymentItemVO = PaymentItemVO(
+    id = id,
+    sn = sn,
+    amount = "¥${"%.2f".format(amount / 100.0)}",
+    paymentTime = paymentTime.toFormattedString("yyyy-MM-dd HH:mm"),
+    paymentMethod = paymentMethods.description
 )

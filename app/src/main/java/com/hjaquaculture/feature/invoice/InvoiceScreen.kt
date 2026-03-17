@@ -1,9 +1,15 @@
 package com.hjaquaculture.feature.invoice
 
-
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,58 +17,65 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import com.hjaquaculture.common.utils.InvoiceSymbol
 import com.hjaquaculture.feature.AuthAction
 import com.hjaquaculture.feature._temp.FilterOption
 import com.hjaquaculture.feature._temp.InlineFilterPanelStaggered
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun InvoiceScreen(
     vm: InvoiceViewModel = hiltViewModel(),
     onAction: (AuthAction) -> Unit,
     scaffoldPadding: PaddingValues,
 ) {
-
     val listItems = vm.invoicePagingData.collectAsLazyPagingItems()
+    val expandedItem by vm.expandedInvoiceItem.collectAsStateWithLifecycle()
+    val detailState by vm.detailState.collectAsStateWithLifecycle()
+
     var filter by remember { mutableStateOf(FilterOption()) }
     var isFilterWrite by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(scaffoldPadding).padding(horizontal = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(scaffoldPadding)
+            .padding(horizontal = 8.dp),
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
-        ){
-
+        ) {
             OutlinedTextField(
                 value = "",
                 onValueChange = { },
@@ -75,7 +88,10 @@ fun InvoiceScreen(
             FilledIconButton(
                 onClick = { isFilterWrite = !isFilterWrite },
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = if (isFilterWrite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = if (isFilterWrite)
+                        MaterialTheme.colorScheme.primaryContainer
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
                 Icon(Icons.Default.Tune, contentDescription = "高级筛选")
@@ -88,62 +104,50 @@ fun InvoiceScreen(
             onChanged = { filter = it }
         )
 
+        Spacer(Modifier.height(8.dp))
         LazyColumn {
             items(
                 count = listItems.itemCount,
                 key = listItems.itemKey { it.syntheticId }
             ) { index ->
-                val item = listItems[index]
-                item?.let { InvoiceCard(item) }
+                val item = listItems[index] ?: return@items
+                val isExpanded = expandedItem == item
+
+                InvoiceCard(
+                    invoiceVO = item,
+                    isExpanded = isExpanded,
+                    detailState = detailState,
+                    onToggle = { vm.toggleInvoice(item) }
+                )
                 Spacer(Modifier.height(8.dp))
             }
-
         }
     }
-
-
-
 }
 
-
-@Preview
 @Composable
-fun PreviewInvoiceCard() {
-    InvoiceCard(
-        InvoiceVO(
-            symbol = InvoiceSymbol.SALE,
-            symbolDescription = "销售订单",
-            syntheticId = "SALE_INVOICE_1",
-            originalId = 1,
-            sn = "123456789",
-            partnerId = 1,
-            partnerName = "测试客户",
-            creatorId = 1,
-            creatorName = "测试用户",
-            amountTotal = "100.00",
-            amountPaid = "50.00",
-            amountRem = "50.00",
-            status = "已付",
-            remark = "测试备注",
-            createdAt = "2023-04-01",
-            isDetailsExpanded = false
-        )
-    )
-}
-@Composable
-fun InvoiceCard(invoiceVO: InvoiceVO){
-    var isExpanded by remember { mutableStateOf(false) }
-
+fun InvoiceCard(
+    invoiceVO: InvoiceVO,
+    isExpanded: Boolean,
+    detailState: InvoiceDetailState,
+    onToggle: () -> Unit
+) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isExpanded = !isExpanded },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clickable { onToggle() },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 22.dp,
+            focusedElevation = 10.dp
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
+                .animateContentSize()
         ) {
-            // --- 卡片头部 ---
+            // 头部
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -156,7 +160,8 @@ fun InvoiceCard(invoiceVO: InvoiceVO){
                 )
                 Text(invoiceVO.createdAt)
             }
-            Row{
+
+            Row {
                 Text("单号：${invoiceVO.sn}")
                 Spacer(Modifier.weight(1f))
                 Text(invoiceVO.status)
@@ -164,7 +169,7 @@ fun InvoiceCard(invoiceVO: InvoiceVO){
                 Text(invoiceVO.creatorName)
                 Spacer(Modifier.weight(1f))
             }
-            Row{
+            Row {
                 Text("应付：${invoiceVO.amountTotal}")
                 Spacer(Modifier.weight(1f))
                 Text("实付：${invoiceVO.amountPaid}")
@@ -172,34 +177,98 @@ fun InvoiceCard(invoiceVO: InvoiceVO){
                 Text("欠付：${invoiceVO.amountRem}")
                 Spacer(Modifier.weight(1f))
             }
-            if(invoiceVO.remark != null){
-                Row{
+            if (invoiceVO.remark != null) {
+                Row {
                     Text("备注：${invoiceVO.remark}")
                     Spacer(Modifier.weight(1f))
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+
+            // 展开区域：流水明细
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn(animationSpec = tween(150)) + expandVertically(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(120)) + shrinkVertically(animationSpec = tween(120))
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        text = if (isExpanded) "收起详情" else "查看详情",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalDivider(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        // 数据列表
+                        Column {
+                            Text(
+                                "付款流水",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            if (detailState.items.isEmpty() && !detailState.isLoading) {
+                                Text(
+                                    "暂无流水记录",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            } else {
+                                detailState.items.forEach { item ->
+                                    key(item.sn){
+                                        PaymentItemRow(item)
+                                    }
+                                    Spacer(Modifier.height(4.dp))
+                                }
+                            }
+                        }
+
+                        // 加载指示
+                        if (detailState.isLoading) {
+                            if (detailState.items.isEmpty()) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp).align(Alignment.Center)
+                                )
+                            } else {
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(2.dp)
+                                        .align(Alignment.TopCenter)
+                                )
+                            }
+                        }
+
+                        // 错误提示
+                        if (detailState.error != null) {
+                            Text(
+                                text = "加载失败: ${detailState.error}",
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun PaymentItemRow(item: PaymentItemVO) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(item.sn, style = MaterialTheme.typography.bodySmall)
+            Text(item.paymentTime, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline)
+        }
+        Text(item.paymentMethod, style = MaterialTheme.typography.bodySmall)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            item.amount,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.tertiary
+        )
     }
 }

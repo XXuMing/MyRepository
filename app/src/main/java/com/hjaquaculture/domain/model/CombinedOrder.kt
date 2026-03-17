@@ -53,5 +53,4 @@ data class CombinedOrder(
 sealed class OrderItemsData {
     data class Sale(val data: List<SaleOrderItem>) : OrderItemsData()
     data class Purchase(val data: List<PurchaseOrderItem>) : OrderItemsData()
-    data class Error(val message: String) : OrderItemsData()
 }

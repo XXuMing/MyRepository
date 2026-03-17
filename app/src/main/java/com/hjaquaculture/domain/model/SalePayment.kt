@@ -14,7 +14,7 @@ data class SalePayment(
     val sn: String,
     val invoiceId: Long,
     val customerId: Long,
-    val amount: Long, // 统一使用 Long 存储（分）
+    val amount: Long,
     val paymentTime: Long,
     val paymentMethods: PaymentMethods
 ) {
