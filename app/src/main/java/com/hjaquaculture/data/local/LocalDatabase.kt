@@ -3,11 +3,11 @@ package com.hjaquaculture.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.hjaquaculture.common.utils.DeliveryMethodConverter
 import com.hjaquaculture.common.utils.InvoiceStatusConverter
 import com.hjaquaculture.common.utils.InvoiceSymbolConverters
 import com.hjaquaculture.common.utils.OrderStatusConverter
 import com.hjaquaculture.common.utils.OrderSymbolConverters
-import com.hjaquaculture.common.utils.OrderTypeConverter
 import com.hjaquaculture.common.utils.PaymentMethodsConverter
 import com.hjaquaculture.common.utils.PeopleSymbolConverters
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
@@ -59,7 +59,7 @@ import com.hjaquaculture.data.local.entity.UserEntity
     exportSchema = true
 )
 @TypeConverters(
-    OrderTypeConverter::class,
+    DeliveryMethodConverter::class,
     OrderStatusConverter::class,
     InvoiceStatusConverter::class,
     PaymentMethodsConverter::class,

@@ -2,7 +2,7 @@ package com.hjaquaculture.data.local.repository
 
 import androidx.room.withTransaction
 import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.OrderPrefix
+import com.hjaquaculture.common.utils.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao
@@ -23,7 +23,7 @@ class PurchaseOrderRepository @Inject constructor(
     suspend fun addPurchaseOrder (purchaseOrderEntity : PurchaseOrderEntity): Long{
         return database.withTransaction {
             val newId = dao.insert(purchaseOrderEntity)
-            val sn = orderManager.generateSn(OrderPrefix.PURCHASE_ORDER, newId)
+            val sn = orderManager.generateSn(SnPrefix.PURCHASE_ORDER, newId)
             dao.updateSn(newId, sn)
             newId
         }

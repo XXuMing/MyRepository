@@ -29,6 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +40,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.hjaquaculture.common.utils.DeliveryMethod
+import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.feature.components.FilterGroupConfig
+import com.hjaquaculture.feature.components.SearchFilterBar
 
 @Composable
 fun OrderScreen(
@@ -48,25 +56,62 @@ fun OrderScreen(
     val detailState by vm.detailState.collectAsStateWithLifecycle()
 
 
-    Spacer(Modifier.height(8.dp))
-    LazyColumn(
-        modifier = Modifier.padding(scaffoldPadding)
-    ) {
-        items(
-            count = listItems.itemCount,
-            key = listItems.itemKey { it.syntheticId }
-        ) { index ->
-            val isExpanded = expandedItem == listItems[index]
-            OrderCard(
-                orderVO = listItems[index] ?: return@items,
-                isExpanded = isExpanded,
-                detailState = detailState,
-                onToggle = {  vm.toggleOrder(listItems[index] ?: return@OrderCard) }
+    // ViewModel 中管理过滤状态（这里用本地 remember 演示）
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedSymbol by remember { mutableStateOf<OrderSymbol?>(null) }
+    var selectedDeliveryMethod by remember { mutableStateOf<DeliveryMethod?>(null) }
+    var selectedStatus by remember { mutableStateOf<OrderStatus?>(null) }
+
+    Column(modifier = Modifier.fillMaxWidth()
+        .padding(scaffoldPadding)
+        .padding(horizontal = 12.dp)
+    )
+    {
+
+        // ✅ 直接调用组件，传入各页面专属的枚举配置
+        SearchFilterBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            searchPlaceholder = "搜索订单号",          // 每个页面可自定义
+            filterGroups = listOf(
+                FilterGroupConfig(
+                    title = "订单类型",
+                    options = OrderSymbol.entries,
+                    selected = selectedSymbol,
+                    onSelect = { selectedSymbol = it }
+                ),
+                FilterGroupConfig(
+                    title = "交付方式",
+                    options = DeliveryMethod.entries,
+                    selected = selectedDeliveryMethod,
+                    onSelect = { selectedDeliveryMethod = it }
+                ),
+                FilterGroupConfig(
+                    title = "订单状态",
+                    options = OrderStatus.entries,     // 所有枚举值
+                    selected = selectedStatus,
+                    onSelect = { selectedStatus = it } // it 可能是 null（全部）
+                )
             )
-            Spacer(Modifier.height(8.dp))
+        )
+
+
+        LazyColumn{
+            items(
+                count = listItems.itemCount,
+                key = listItems.itemKey { it.syntheticId }
+            ) { index ->
+                val isExpanded = expandedItem == listItems[index]
+                Spacer(Modifier.height(8.dp))
+                OrderCard(
+                    orderVO = listItems[index] ?: return@items,
+                    isExpanded = isExpanded,
+                    detailState = detailState,
+                    onToggle = {  vm.toggleOrder(listItems[index] ?: return@OrderCard) }
+                )
+            }
         }
     }
-
 }
 @Composable
 fun OrderCard(

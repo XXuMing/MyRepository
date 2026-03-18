@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderType
 
 /**
  * 采购订单
@@ -16,7 +16,7 @@ import com.hjaquaculture.common.utils.OrderType
  * @param invoiceSn 账单编号
  * @param supplierId 供应商ID
  * @param creatorId 用户ID
- * @param orderType 订单类型（货运、自提）
+ * @param deliveryMethod 订单类型（货运、自提）
  * @param orderStatus 订单状态（预定、草稿、确认、完成、作废）
  * @param totalPrice 总价(元)
  * @param totalQuantity 总数量
@@ -84,7 +84,7 @@ data class PurchaseOrderEntity (
     val creatorId: Long,
 
     @ColumnInfo(name = "order_type")
-    val orderType: OrderType,
+    val deliveryMethod: DeliveryMethod,
 
     @ColumnInfo(name = "order_status")
     val orderStatus: OrderStatus = OrderStatus.DRAFT,

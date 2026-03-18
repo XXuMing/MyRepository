@@ -20,19 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,9 +41,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.hjaquaculture.common.utils.InvoiceStatus
+import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.utils.PaymentMethods
 import com.hjaquaculture.feature.AuthAction
-import com.hjaquaculture.feature._temp.FilterOption
-import com.hjaquaculture.feature._temp.InlineFilterPanelStaggered
+import com.hjaquaculture.feature.components.FilterGroupConfig
+import com.hjaquaculture.feature.components.SearchFilterBar
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -63,48 +59,44 @@ fun InvoiceScreen(
     val expandedItem by vm.expandedInvoiceItem.collectAsStateWithLifecycle()
     val detailState by vm.detailState.collectAsStateWithLifecycle()
 
-    var filter by remember { mutableStateOf(FilterOption()) }
-    var isFilterWrite by remember { mutableStateOf(false) }
+    // ViewModel 中管理过滤状态（这里用本地 remember 演示）
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedSymbol by remember { mutableStateOf<InvoiceSymbol?>(null) }
+    var selectedStatus by remember { mutableStateOf<InvoiceStatus?>(null) }
+    var selectedPaymentMethod by remember { mutableStateOf<PaymentMethods?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(scaffoldPadding)
-            .padding(horizontal = 8.dp),
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = { },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("搜索") },
-                placeholder = { Text("商品类别/商品名称") },
-                leadingIcon = { Icon(Icons.Default.Search, null) },
-                shape = MaterialTheme.shapes.medium
-            )
-            FilledIconButton(
-                onClick = { isFilterWrite = !isFilterWrite },
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = if (isFilterWrite)
-                        MaterialTheme.colorScheme.primaryContainer
-                    else
-                        MaterialTheme.colorScheme.surfaceVariant
+    Column(modifier = Modifier.fillMaxWidth()
+        .padding(scaffoldPadding)
+        .padding(horizontal = 12.dp)
+    )
+    {
+
+        SearchFilterBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            searchPlaceholder = "搜索账单号",
+            filterGroups = listOf(
+                FilterGroupConfig(
+                    title = "账单类型",
+                    options = InvoiceSymbol.entries,
+                    selected = selectedSymbol,
+                    onSelect = { selectedSymbol = it }
+                ),
+                FilterGroupConfig(
+                    title = "付款方式",
+                    options = PaymentMethods.entries,
+                    selected = selectedPaymentMethod,
+                    onSelect = { selectedPaymentMethod = it }
+                ),
+                FilterGroupConfig(
+                    title = "账单状态",
+                    options = InvoiceStatus.entries,
+                    selected = selectedStatus,
+                    onSelect = { selectedStatus = it }
                 )
-            ) {
-                Icon(Icons.Default.Tune, contentDescription = "高级筛选")
-            }
-        }
-
-        InlineFilterPanelStaggered(
-            isVisible = isFilterWrite,
-            currentOption = filter,
-            onChanged = { filter = it }
+            )
         )
 
-        Spacer(Modifier.height(8.dp))
         LazyColumn {
             items(
                 count = listItems.itemCount,
@@ -113,13 +105,14 @@ fun InvoiceScreen(
                 val item = listItems[index] ?: return@items
                 val isExpanded = expandedItem == item
 
+                Spacer(Modifier.height(8.dp))
+
                 InvoiceCard(
                     invoiceVO = item,
                     isExpanded = isExpanded,
                     detailState = detailState,
                     onToggle = { vm.toggleInvoice(item) }
                 )
-                Spacer(Modifier.height(8.dp))
             }
         }
     }

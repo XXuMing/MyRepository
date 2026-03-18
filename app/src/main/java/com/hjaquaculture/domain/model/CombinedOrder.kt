@@ -1,8 +1,8 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.OrderStatus
 import com.hjaquaculture.common.utils.OrderSymbol
-import com.hjaquaculture.common.utils.OrderType
 
 /**
  * 订单概要领域模型（综合销售与采购）
@@ -15,7 +15,7 @@ data class CombinedOrder(
     val partnerName: String,
     val creatorId: Long,
     val creatorName: String,
-    val orderType: OrderType,
+    val deliveryMethod: DeliveryMethod,
     val orderStatus: OrderStatus,
     val totalPrice: Long,
     val totalQuantity: Int,

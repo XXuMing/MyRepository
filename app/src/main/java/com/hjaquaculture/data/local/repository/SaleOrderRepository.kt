@@ -2,7 +2,7 @@ package com.hjaquaculture.data.local.repository
 
 import androidx.room.withTransaction
 import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.OrderPrefix
+import com.hjaquaculture.common.utils.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.SaleOrderDao
 import com.hjaquaculture.data.local.dao.SaleOrderItemDao
@@ -24,7 +24,7 @@ class SaleOrderRepository @Inject constructor(
             // 默认sn = null，先插入新数据返回id
             val newId = dao.insert(saleOrderEntity)
             // 通过id生成sn
-            val sn = orderManager.generateSn(OrderPrefix.SALE_ORDER, newId)
+            val sn = orderManager.generateSn(SnPrefix.SALE_ORDER, newId)
             // 单独更新该id的sn
             dao.updateSn(newId, sn)
             newId
