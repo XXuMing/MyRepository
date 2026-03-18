@@ -69,7 +69,7 @@ fun CombinedOrder.toVO(): OrderVO{
 
         totalPrice = "¥${totalPrice / 100}",
         totalQuantity = totalQuantity.toString(),
-        orderType = orderType.description,
+        orderType = deliveryMethod.description,
         orderStatus = orderStatus.description,
 
         remark = remark,

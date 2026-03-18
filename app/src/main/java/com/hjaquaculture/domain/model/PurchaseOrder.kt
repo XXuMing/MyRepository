@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderType
 import java.math.BigDecimal
 
 /**
@@ -15,7 +15,7 @@ data class PurchaseOrder(
     val supplierId: Long,
     val supplierName: String, // 快照：记录下单时的供应商名称
     val creatorId: Long,
-    val orderType: OrderType,
+    val deliveryMethod: DeliveryMethod,
     val orderStatus: OrderStatus,
     val totalPrice: Long,
     val totalQuantity: Int,

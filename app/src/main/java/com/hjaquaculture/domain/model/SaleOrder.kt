@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderType
 
 /**
  * 销售订单领域模型
@@ -13,7 +13,7 @@ data class SaleOrder(
     val invoiceSn: String,
     val creatorId: Long,
     val customerId: Long,
-    val orderType: OrderType,
+    val deliveryMethod: DeliveryMethod,
     val orderStatus: OrderStatus,
     val totalPrice: Long, // 存储依然使用 Long (分)
     val totalQuantity: Int,

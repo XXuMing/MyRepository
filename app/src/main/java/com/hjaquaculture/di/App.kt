@@ -2,9 +2,9 @@ package com.hjaquaculture.di
 
 import android.app.Application
 import android.util.Log
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.InvoiceStatus
 import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderType
 import com.hjaquaculture.common.utils.PaymentMethods
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.CombinedOrderDao
@@ -223,7 +223,7 @@ class App : Application(){
                     customerId = 1,
                     invoiceId = 1,
                     invoiceSn = "测试SN",
-                    orderType = OrderType.FREIGHT,
+                    deliveryMethod = DeliveryMethod.FREIGHT,
                     orderStatus = OrderStatus.CONFIRMED,
                     totalPrice = 100,
                     totalQuantity = 10,
@@ -277,7 +277,7 @@ class App : Application(){
                     supplierId = 1,
                     invoiceId = 1,
                     invoiceSn = "测试SN",
-                    orderType = OrderType.FREIGHT,
+                    deliveryMethod = DeliveryMethod.FREIGHT,
                     orderStatus = OrderStatus.CONFIRMED,
                     supplierName = "测试供应商",
                     totalPrice = 200,

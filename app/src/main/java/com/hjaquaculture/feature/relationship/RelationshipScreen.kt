@@ -9,16 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +24,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.hjaquaculture.feature.AuthAction
-import com.hjaquaculture.feature._temp.FilterOption
 
 @Composable
 fun RelationshipScreen(
@@ -41,31 +32,11 @@ fun RelationshipScreen(
     scaffoldPadding: PaddingValues,
 ) {
     val listItems = vm.relationshipPagingData.collectAsLazyPagingItems()
-    var filter by remember { mutableStateOf(FilterOption()) }
-    var isFilterWrite by remember { mutableStateOf(false) }
-
-
-    Column(
-        modifier = Modifier.padding(scaffoldPadding).padding(horizontal = 8.dp),
-    ) {
-        Row() {
-            OutlinedTextField(
-                value = "",
-                onValueChange = { },
-                label = { Text("搜索") },
-                placeholder = { Text("名称/昵称") },
-                leadingIcon = { Icon(Icons.Default.Search, null) },
-                shape = MaterialTheme.shapes.medium
-            )
-            FilledIconButton(
-                onClick = { isFilterWrite = !isFilterWrite },
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = if (isFilterWrite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(Icons.Default.Tune, contentDescription = "高级筛选")
-            }
-        }
+    Column(modifier = Modifier.fillMaxWidth()
+        .padding(scaffoldPadding)
+        .padding(horizontal = 12.dp)
+    )
+    {
         LazyColumn {
             items(
                 count = listItems.itemCount,

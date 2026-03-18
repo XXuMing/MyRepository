@@ -5,7 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.room.withTransaction
 import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.OrderPrefix
+import com.hjaquaculture.common.utils.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity
@@ -26,7 +26,7 @@ class PurchaseInvoiceRepository @Inject constructor(
     suspend fun add(purchaseInvoiceEntity: PurchaseInvoiceEntity):Long{
         return database.withTransaction {
             val newId = dao.insert(purchaseInvoiceEntity)
-            val sn = orderManager.generateSn(OrderPrefix.PURCHASE_INVOICE, newId)
+            val sn = orderManager.generateSn(SnPrefix.PURCHASE_INVOICE, newId)
             dao.updateSn(newId, sn)
             newId
         }

@@ -2,9 +2,9 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
+import com.hjaquaculture.common.utils.DeliveryMethod
 import com.hjaquaculture.common.utils.OrderStatus
 import com.hjaquaculture.common.utils.OrderSymbol
-import com.hjaquaculture.common.utils.OrderType
 
 /**
  * 合并订单视图
@@ -15,7 +15,7 @@ import com.hjaquaculture.common.utils.OrderType
  * @param creatorName 操作者名称
  * @param partnerId 合作伙伴ID
  * @param partnerName 合作伙伴名称
- * @param orderType 订单类型
+ * @param deliveryMethod 订单类型
  * @param orderStatus 订单状态
  * @param totalPrice 总金额
  * @param totalQuantity 总数量
@@ -80,7 +80,7 @@ data class CombinedOrderView(
     val partnerName: String,
 
     @ColumnInfo("order_type")
-    val orderType: OrderType,
+    val deliveryMethod: DeliveryMethod,
 
     @ColumnInfo("order_status")
     val orderStatus: OrderStatus,

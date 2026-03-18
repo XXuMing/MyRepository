@@ -2,7 +2,7 @@ package com.hjaquaculture.data.local.repository
 
 import androidx.room.withTransaction
 import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.OrderPrefix
+import com.hjaquaculture.common.utils.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.SalePaymentDao
 import com.hjaquaculture.data.local.entity.SalePaymentEntity
@@ -19,7 +19,7 @@ class SalePaymentRepository @Inject constructor(
     suspend fun addSalePayment(salePaymentEntity: SalePaymentEntity) : Long{
         return database.withTransaction {
             val newId = dao.insert(salePaymentEntity)
-            val sn = orderManager.generateSn(OrderPrefix.SALE_PAYMENT, newId)
+            val sn = orderManager.generateSn(SnPrefix.SALE_PAYMENT, newId)
             dao.updateSn(newId, sn)
             newId
         }
