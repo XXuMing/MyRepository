@@ -1,5 +1,6 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.base.MeasureDimension
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -9,7 +10,7 @@ import java.math.RoundingMode
 data class MeasureUnit(
     val id: Int,
     val name: String,
-    val category: String,
+    val dimension: MeasureDimension,
     val conversionRate: Double,
     val precision: Int,
     val isBase: Boolean,

@@ -7,22 +7,22 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.hjaquaculture.data.local.mapper.toDomain
-import com.hjaquaculture.domain.model.CategoryWithProducts
+import com.hjaquaculture.domain.model.VarietyWithProducts
 
 /**
- * 商品分类
+ * 商品品类
  * @param id 主键
- * @param name 分类名
+ * @param name 品类名
  * @param sort 排序
  */
 @Entity(
-    tableName = "product_category",
+    tableName = "product_variety",
     indices =[
         Index(value = ["name"], unique = true),
         Index(value = ["sort"], orders = [Index.Order.ASC])
     ]
 )
-data class ProductCategoryEntity(
+data class ProductVarietyEntity(
     @PrimaryKey(autoGenerate = true)
     val id : Long = 0,
 
@@ -37,9 +37,9 @@ data class ProductCategoryEntity(
 /**
  * Data 层专用：用于 Room 关联查询的实体
  */
-data class CategoryWithProductEntity(
+data class VarietyWithProductEntity(
     @Embedded
-    val category: ProductCategoryEntity,
+    val category: ProductVarietyEntity,
 
     @Relation(
         parentColumn = "id",
@@ -51,8 +51,8 @@ data class CategoryWithProductEntity(
 /**
  * 将 Room 查询出的关联实体转换为 Domain 层的业务对象
  */
-fun CategoryWithProductEntity.toDomain(): CategoryWithProducts {
-    return CategoryWithProducts(
+fun VarietyWithProductEntity.toDomain(): VarietyWithProducts {
+    return VarietyWithProducts(
         category = this.category.toDomain(), // 调用之前写的 CategoryMapper
         products = this.products.map { it.toDomain() } // 遍历并将每个 ProductEntity 转为 Product
     )

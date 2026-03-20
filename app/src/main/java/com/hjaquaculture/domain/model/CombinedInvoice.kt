@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.InvoiceSymbol
 
 /**
  * 财务发票概要领域模型

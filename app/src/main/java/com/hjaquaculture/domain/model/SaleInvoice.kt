@@ -1,6 +1,6 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.InvoiceStatus
+import com.hjaquaculture.common.base.InvoiceStatus
 import java.math.BigDecimal
 import java.math.RoundingMode
 

@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceSymbol
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao

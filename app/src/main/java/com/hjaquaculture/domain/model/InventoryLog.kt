@@ -1,5 +1,7 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.base.StockChangeType
+
 /**
  * 库存变动流水领域模型
  */
@@ -9,9 +11,10 @@ data class InventoryLog(
     val changeType: StockChangeType, // 使用之前定义的枚举
     val amount: Int,                 // 变动数量（正数为入，负数为出）
     val balanceSnapshot: Int,       // 变动后的库存快照
-    val refOrderSn: String,          // 关联单据号
+    val refOrderId: Long?,
+    val operatorId: Long,
+    val createdAt: Long,
     val remark: String,
-    val createdAt: Long
 ) {
     /**
      * 获取变动的文本描述

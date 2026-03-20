@@ -1,12 +1,13 @@
 package com.hjaquaculture.feature.order
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.OrderSymbol
 import com.hjaquaculture.data.local.repository.OrderRepository
 import com.hjaquaculture.data.local.repository.PurchaseOrderRepository
 import com.hjaquaculture.data.local.repository.SaleOrderRepository
@@ -14,12 +15,15 @@ import com.hjaquaculture.domain.model.OrderItemsData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -35,18 +39,57 @@ class OrderViewModel @Inject constructor(
     private val purOrderRepo: PurchaseOrderRepository
 ) : ViewModel() {
 
-    // 订单分页数据
-    val orderList: Flow<PagingData<OrderVO>> =
-        orderRepo.getCombinedOrders("", null, null, null).map { pagingData ->
+    // 过滤状态
+    private val _searchQuery = MutableStateFlow("")
+    private val _selectedSymbol = MutableStateFlow<OrderSymbol?>(null)
+    private val _selectedDeliveryMethod = MutableStateFlow<DeliveryMethod?>(null)
+    private val _selectedStatus = MutableStateFlow<OrderStatus?>(null)
+
+    // 暴露给 UI 观察
+    val searchQuery = _searchQuery.asStateFlow()
+    val selectedSymbol = _selectedSymbol.asStateFlow()
+    val selectedDeliveryMethod = _selectedDeliveryMethod.asStateFlow()
+    val selectedStatus = _selectedStatus.asStateFlow()
+
+    // 过滤动作
+    fun onSearchQueryChange(query: String) { _searchQuery.value = query }
+    fun onSymbolSelected(symbol: OrderSymbol?) { _selectedSymbol.value = symbol }
+    fun onDeliveryMethodSelected(method: DeliveryMethod?) { _selectedDeliveryMethod.value = method }
+    fun onStatusSelected(status: OrderStatus?) { _selectedStatus.value = status }
+
+    // 私有数据类，避免多参数 combine 难以阅读
+    private data class FilterParams(
+        val query: String,
+        val symbol: OrderSymbol?,
+        val deliveryMethod: DeliveryMethod?,
+        val status: OrderStatus?
+    )
+    // 合并过滤条件，任一变化都触发重新分页
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val orderList: Flow<PagingData<OrderVO>> = combine(
+        _searchQuery,
+        _selectedSymbol,
+        _selectedDeliveryMethod,
+        _selectedStatus
+    ) { query, symbol, method, status ->
+        FilterParams(query, symbol, method, status)
+    }
+    .debounce(300) // 搜索框防抖
+    .flatMapLatest { params ->
+        orderRepo.getCombinedOrders(
+            query = params.query,
+            symbol = params.symbol?.dbValue,
+            type = params.deliveryMethod?.code?.toString(),
+            status = params.status?.code?.toString()
+        ).map { pagingData ->
             pagingData.map { domain ->
-                try {
-                    domain.toVO()
-                } catch (e: Exception) {
-                    Log.e("VO_ERROR", "转换失败，数据条目ID: ${domain.id}", e)
-                    throw e
-                }
+                try { domain.toVO() } catch (e: Exception) { throw e }
             }
-        }.cachedIn(viewModelScope)
+        }
+    }.cachedIn(viewModelScope)
+
+
+
 
     // 1. 驱动源：当前哪个订单被展开了
     private val _expandedOrderItem = MutableStateFlow<OrderVO?>(null)

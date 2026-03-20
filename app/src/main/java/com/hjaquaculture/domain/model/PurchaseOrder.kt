@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
 import java.math.BigDecimal
 
 /**

@@ -1,8 +1,8 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.OrderSymbol
 
 /**
  * 订单概要领域模型（综合销售与采购）

@@ -1,7 +1,7 @@
 package com.hjaquaculture.feature.invoice
 
 import androidx.compose.runtime.Immutable
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
 import com.hjaquaculture.domain.model.CombinedInvoice
 import com.hjaquaculture.domain.model.PurchasePayment

@@ -1,7 +1,7 @@
 package com.hjaquaculture.feature.product
 
-import com.hjaquaculture.data.local.entity.ProductCategoryEntity
 import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 
 /**
  * 分类和商品的视图对象
@@ -11,7 +11,7 @@ data class CategoryWithProductsVO(
     /**
      * 分类对象
      */
-    val category: ProductCategoryEntity,
+    val category: ProductVarietyEntity,
 
     /**
      * 商品列表

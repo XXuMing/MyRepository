@@ -4,12 +4,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.common.base.MeasureDimension
 
 /**
- * 单位表
+ * 计量单位表
  * @param id 主键
  * @param name 名称
- * @param category 分类
+ * @param dimension 分类
  * @param conversionRate 换算率
  * @param precision 小数位数
  * @param isBase 是否基准，每个分类中只能存在一个基准
@@ -18,8 +19,8 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "measure_units",
     indices = [
-        Index(value = ["category", "is_base"], unique = true),
-        Index(value = ["category","name"]),
+        Index(value = ["dimension", "is_base"], unique = true),
+        Index(value = ["dimension","name"]),
         Index(value = ["sort"]),
     ]
 )
@@ -30,8 +31,8 @@ data class MeasureUnitEntity(
     @ColumnInfo(name = "name")
     val name: String,
 
-    @ColumnInfo(name = "category")
-    val category: String,
+    @ColumnInfo(name = "dimension")
+    val dimension: MeasureDimension,
 
     @ColumnInfo(name = "conversion_rate")
     val conversionRate: Double,

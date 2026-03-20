@@ -2,10 +2,11 @@ package com.hjaquaculture.di
 
 import android.app.Application
 import android.util.Log
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.PaymentMethods
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.MeasureDimension
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.PaymentMethods
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.CombinedOrderDao
 import com.hjaquaculture.data.local.dao.CombinedPeopleDao
@@ -26,9 +27,9 @@ import com.hjaquaculture.data.local.dao.SupplierDao
 import com.hjaquaculture.data.local.dao.UserDao
 import com.hjaquaculture.data.local.entity.CustomerEntity
 import com.hjaquaculture.data.local.entity.MeasureUnitEntity
-import com.hjaquaculture.data.local.entity.ProductCategoryEntity
 import com.hjaquaculture.data.local.entity.ProductEntity
 import com.hjaquaculture.data.local.entity.ProductPriceHistoryEntity
+import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity
 import com.hjaquaculture.data.local.entity.PurchaseOrderEntity
 import com.hjaquaculture.data.local.entity.PurchaseOrderItemEntity
@@ -125,17 +126,17 @@ class App : Application(){
                 MeasureUnitEntity(
                     id = 1,
                     name = "件",
-                    category = "数量",
+                    dimension = MeasureDimension.QUANTITY,
                     conversionRate = 1.0,
                     precision = 0,
                     isBase = true,
                     sort = 0
                 ),
-                MeasureUnitEntity(id = 2, name = "箱", category = "数量", conversionRate = 10.0, precision = 0, isBase = false, sort = 1),
-                MeasureUnitEntity(id = 3, name = "袋", category = "数量", conversionRate = 100.0, precision = 0, isBase = false, sort = 2),
-                MeasureUnitEntity(id = 4, name = "斤", category = "重量", conversionRate = 1.0, precision = 0, isBase = true, sort = 0),
-                MeasureUnitEntity(id = 5, name = "公斤", category = "重量", conversionRate = 1000.0, precision = 0, isBase = false, sort = 1),
-                MeasureUnitEntity(id = 6, name = "吨", category = "重量", conversionRate = 1000000.0, precision = 0, isBase = false, sort = 2),
+                MeasureUnitEntity(id = 2, name = "箱", dimension = MeasureDimension.QUANTITY, conversionRate = 10.0, precision = 0, isBase = false, sort = 1),
+                MeasureUnitEntity(id = 3, name = "袋", dimension = MeasureDimension.QUANTITY, conversionRate = 100.0, precision = 0, isBase = false, sort = 2),
+                MeasureUnitEntity(id = 4, name = "斤", dimension = MeasureDimension.QUANTITY, conversionRate = 1.0, precision = 0, isBase = true, sort = 0),
+                MeasureUnitEntity(id = 5, name = "公斤", dimension = MeasureDimension.QUANTITY, conversionRate = 1000.0, precision = 0, isBase = false, sort = 1),
+                MeasureUnitEntity(id = 6, name = "吨", dimension = MeasureDimension.QUANTITY, conversionRate = 1000000.0, precision = 0, isBase = false, sort = 2),
             )
             measureUnitDao.insertAll(unitEntities)
             Log.d("DB_Callback", "Unit测试数据填充完毕")
@@ -169,7 +170,7 @@ class App : Application(){
         }
         if(productCategoryDao.getCount() == 0) {
             for (i in 1..5) {
-                val productCategory = ProductCategoryEntity(name = "测试分类$i")
+                val productCategory = ProductVarietyEntity(name = "测试分类$i")
                 productCategoryDao.insert(productCategory)
             }
             Log.d("DB_Callback", "ProductCategory测试数据填充完毕")
@@ -179,7 +180,7 @@ class App : Application(){
             var num : Int = 1
             for (i in 1..5) {
                 for (j in 1..5) {
-                    val product = ProductEntity(name = "测试商品$num", currentPrice =  100, categoryId = i.toLong())
+                    val product = ProductEntity(name = "测试商品$num", currentPrice =  100, varietyId = i.toLong(), measureDimension = MeasureDimension.QUANTITY)
                     num++
                     productDao.insert(product)
                 }
@@ -189,7 +190,7 @@ class App : Application(){
 
         if(productPriceHistoryDao.getCount() == 0) {
             for (i in 1..5) {
-                val productPriceHistoryEntity = ProductPriceHistoryEntity(userId = 1, productId = 1, originalPrice = 100, newPrice = 200, originalPriceDate = "2025-10-10")
+                val productPriceHistoryEntity = ProductPriceHistoryEntity(operatorId = 1, productId = 1, price = 200)
                 productPriceHistoryDao.insert(productPriceHistoryEntity)
             }
             Log.d("DB_Callback", "ProductPriceHistory测试数据填充完毕")

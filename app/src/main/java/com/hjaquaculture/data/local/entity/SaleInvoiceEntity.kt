@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.hjaquaculture.common.utils.InvoiceStatus
+import com.hjaquaculture.common.base.InvoiceStatus
 
 /**
  * 销售发票

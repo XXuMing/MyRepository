@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
 
 /**
  * 销售订单领域模型

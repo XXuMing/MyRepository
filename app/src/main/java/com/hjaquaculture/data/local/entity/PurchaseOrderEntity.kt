@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
 
 /**
  * 采购订单

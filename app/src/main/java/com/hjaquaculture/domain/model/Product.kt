@@ -1,5 +1,7 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.base.MeasureDimension
+
 /**
  * 商品领域模型
  */
@@ -7,7 +9,8 @@ data class Product(
     val id: Long,
     val name: String,
     val currentPrice: Long, // 明确标注单位为“分”
-    val categoryId: Long,
+    val varietyId: Long,
+    val measureDimension: MeasureDimension,
     val isAvailable: Boolean,
     val sort: Int
 ) {

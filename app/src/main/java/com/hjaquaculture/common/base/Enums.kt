@@ -1,20 +1,15 @@
-package com.hjaquaculture.common.utils
+package com.hjaquaculture.common.base
 
 import androidx.room.TypeConverter
-import com.hjaquaculture.common.utils.DeliveryMethod.Companion.fromCode
-import com.hjaquaculture.common.utils.InvoiceStatus.Companion.fromCode
-import com.hjaquaculture.common.utils.OrderStatus.Companion.fromCode
-import com.hjaquaculture.common.utils.PaymentMethods.Companion.fromCode
+import com.hjaquaculture.common.base.InvoiceStatus.Companion.fromCode
+import com.hjaquaculture.common.base.OrderStatus.Companion.fromCode
+import com.hjaquaculture.common.base.PaymentMethods.Companion.fromCode
 import com.hjaquaculture.feature.components.FilterableOption
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 
 // ==========================================
 // SN 前缀
@@ -78,6 +73,9 @@ class OrderManager @Inject constructor() {
 // 订单、账单标记
 // ==========================================
 
+/**
+ * 订单标识：销售订单、采购订单
+ */
 enum class OrderSymbol(val dbValue: String, val description: String): FilterableOption {
     SALE("SALE_ORDER", "销售订单"),
     PURCHASE("PUR_ORDER", "采购订单");
@@ -89,6 +87,11 @@ enum class OrderSymbol(val dbValue: String, val description: String): Filterable
         throw IllegalArgumentException("未知的订单类别: $value")
     }
 }
+
+/**
+ * 订单标识转换器
+ * 将 OrderSymbol 转换为 String，并反向转换
+ */
 class OrderSymbolConverters {
     @TypeConverter
     fun fromOrderSymbol(symbol: OrderSymbol): String = symbol.dbValue
@@ -99,6 +102,9 @@ class OrderSymbolConverters {
     }
 }
 
+/**
+ * 账单标识：销售账单、采购账单
+ */
 enum class InvoiceSymbol(val dbValue: String, val description: String): FilterableOption {
     SALE("SALE_INVOICE", "销售账单"),
     PURCHASE("PUR_INVOICE", "采购账单");
@@ -109,6 +115,11 @@ enum class InvoiceSymbol(val dbValue: String, val description: String): Filterab
         throw IllegalArgumentException("未知的账单类别: $value")
     }
 }
+
+/**
+ * 账单标识转换器
+ * 将 InvoiceSymbol 转换为 String，并反向转换
+ */
 class InvoiceSymbolConverters {
     @TypeConverter
     fun fromInvoiceSymbol(symbol: InvoiceSymbol): String = symbol.dbValue
@@ -119,15 +130,25 @@ class InvoiceSymbolConverters {
     }
 }
 
-enum class PeopleSymbol(val dbValue: String, val description: String){
-    USER("USER", "用户"),
+/**
+ * 人员标识：操作员、客户、供应商
+ */
+enum class PeopleSymbol(val dbValue: String, val description: String): FilterableOption {
+    OPERATOR("OPERATOR", "操作员"),
     CUSTOMER("CUSTOMER", "客户"),
     SUPPLIER("SUPPLIER", "供应商");
+
+    override val label: String get() = description
     companion object {
         fun fromString(value: String?) = entries.find { it.dbValue == value } ?:
         throw IllegalArgumentException("未知的人员类别: $value")
     }
 }
+
+/**
+ * 人员标识转换器
+ * 将 PeopleSymbol 转换为 String，并反向转换
+ */
 class PeopleSymbolConverters {
     @TypeConverter
     fun fromPeopleSymbol(symbol: PeopleSymbol): String = symbol.dbValue
@@ -137,6 +158,58 @@ class PeopleSymbolConverters {
         return PeopleSymbol.fromString(dbValue)
     }
 }
+
+// ==========================================
+// 库存
+// ==========================================
+
+/**
+ * 库存变动类型 枚举：采购入库、销售出库、盘点调整、死亡损耗
+ */
+enum class StockChangeType(val value: Int, val label: String) {
+    PURCHASE_IN(1, "采购入库"),
+    SALE_OUT(2, "销售出库"),
+    ADJUST(3, "盘点调整"),
+    LOSS(4,"死亡损耗");
+
+    companion object {
+        fun fromInt(v: Int) = entries.find { it.value == v } ?: ADJUST
+    }
+}
+
+/**
+ * 库存变动类型转换器
+ * 将 StockChangeType 转换为 Int，并反向转换
+ */
+class StockChangeTypeConverters{
+    @TypeConverter
+    fun fromStockChangeType(type: StockChangeType): Int = type.value
+
+    @TypeConverter
+    fun toStockChangeType(value: Int): StockChangeType =
+        StockChangeType.entries.find { it.value == value }
+            ?: throw IllegalArgumentException("未知的库存变动类型: $value")
+}
+
+/**
+ * 库存计量维度 枚举：重量、数量
+ */
+enum class MeasureDimension(val description: String) {
+    WEIGHT("重量"),
+    QUANTITY("数量")
+}
+/**
+ * 库存计量维度转换器
+ * 将 MeasureDimension 转换为 String，并反向转换
+ */
+class StockUnitCategoryConverter {
+    @TypeConverter
+    fun fromStockUnitCategory(category: MeasureDimension): String = category.name
+
+    @TypeConverter
+    fun toStockUnitCategory(value: String): MeasureDimension = MeasureDimension.valueOf(value)
+}
+
 
 // ==========================================
 // 账单状态
@@ -208,18 +281,12 @@ class PaymentMethodsConverter {
     fun toStatus(value: Int): PaymentMethods = PaymentMethods.fromCode(value)
 }
 
-
-
-
 // ==========================================
 // 订单状态
 // ==========================================
 
 /**
- * 订单类型
- * @property code 类型代码
- * @property description 类型描述
- * @property fromCode 根据代码获取类型
+ * 交付方式 枚举: 自提、货运
  */
 enum class DeliveryMethod(val code: Int, val description: String): FilterableOption {
     PICKUP(1, "自提"),
@@ -234,10 +301,8 @@ enum class DeliveryMethod(val code: Int, val description: String): FilterableOpt
 }
 
 /**
- * 订单类型转换器
- * 将 OrderType 转换为 Int，并反向转换
- * @property fromOrderType 将 OrderType 转换为 Int
- * @property toOrderType 将 Int 转换为 OrderType
+ * 交付方式转换器
+ * 将 DeliveryMethod 转换为 Int，并反向转换
  */
 class DeliveryMethodConverter {
     @TypeConverter
@@ -247,6 +312,7 @@ class DeliveryMethodConverter {
     fun toOrderType(value: Int): DeliveryMethod = DeliveryMethod.fromCode(value)
 
 }
+
 /**
  * 订单状态
  * @property code 状态代码
@@ -305,35 +371,4 @@ class OrderStatusConverter {
 // ==========================================
 // 工具类
 // ==========================================
-
-/**
- *  时间处理工具
- */
-object TimeUtils {
-    // 使用线程安全的 Map 缓存格式化器
-    private val formatterCache = ConcurrentHashMap<String, DateTimeFormatter>()
-
-    // 默认时区
-    private val defaultZone = ZoneId.systemDefault()
-
-    /**
-     * @param millis 时间戳
-     * @param pattern 格式字符串，例如 "yyyy-MM-dd" 或 "HH:mm"
-     */
-    fun format(millis: Long, pattern: String): String {
-        // getOrPut 的逻辑：如果缓存里有就直接拿，没有就创建并存进去
-        val formatter = formatterCache.getOrPut(pattern) {
-            DateTimeFormatter.ofPattern(pattern).withZone(defaultZone)
-        }
-        return formatter.format(Instant.ofEpochMilli(millis))
-    }
-
-    /**
-     * 扩展 Long 类型，方便直接调用
-     * 使用：timestamp.toFormattedString("yyyy-MM-dd")
-     */
-    fun Long.toFormattedString(pattern: String = "yyyy-MM-dd HH:mm"): String {
-        return TimeUtils.format(this, pattern)
-    }
-}
 

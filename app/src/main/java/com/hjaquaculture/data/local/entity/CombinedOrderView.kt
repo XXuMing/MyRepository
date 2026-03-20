@@ -2,9 +2,9 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.OrderSymbol
 
 /**
  * 合并订单视图

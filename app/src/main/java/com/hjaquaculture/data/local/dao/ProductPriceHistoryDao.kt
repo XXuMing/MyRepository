@@ -41,14 +41,14 @@ interface ProductPriceHistoryDao {
      * @param productId 商品的ID
      * @return 包含该商品所有价格历史记录的 Flow
      */
-    @Query("SELECT * FROM product_price_history WHERE product_id = :productId ORDER BY new_price_date DESC")
+    @Query("SELECT * FROM product_price_history WHERE product_id = :productId ORDER BY changed_at DESC")
     fun getForProduct(productId: Long): Flow<List<ProductPriceHistoryEntity>>
 
     /**
      * 为 Paging 3.0 提供分页数据源，获取所有价格历史记录。
      * @return 返回 PagingSource
      */
-    @Query("SELECT * FROM product_price_history ORDER BY new_price_date DESC")
+    @Query("SELECT * FROM product_price_history ORDER BY changed_at DESC")
     fun getPagingSource(): PagingSource<Int, ProductPriceHistoryEntity>
 
     @Query("SELECT COUNT(*) FROM product_price_history")

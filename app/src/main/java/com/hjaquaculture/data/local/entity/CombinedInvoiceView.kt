@@ -2,8 +2,8 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.InvoiceSymbol
 
 /**
  * 发票概要 视图对象

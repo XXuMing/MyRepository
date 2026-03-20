@@ -2,7 +2,7 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.hjaquaculture.common.utils.PeopleSymbol
+import com.hjaquaculture.common.base.PeopleSymbol
 
 /**
  * 合并人员视图
@@ -19,7 +19,7 @@ import com.hjaquaculture.common.utils.PeopleSymbol
 @DatabaseView(
     viewName = "combined_people_view",
     value = """
-SELECT 'USER' AS symbol ,
+SELECT 'OPERATOR' AS symbol ,
     id , name , phone , created_at , address ,
     account ,
     NULL AS nick_name ,

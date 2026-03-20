@@ -1,7 +1,7 @@
 package com.hjaquaculture.feature.order
 
 import androidx.compose.runtime.Immutable
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.OrderSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
 import com.hjaquaculture.domain.model.CombinedOrder
 import com.hjaquaculture.domain.model.PurchaseOrderItem
