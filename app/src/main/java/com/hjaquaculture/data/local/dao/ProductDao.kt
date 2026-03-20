@@ -8,8 +8,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.hjaquaculture.data.local.entity.ProductCategoryEntity
 import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -55,14 +55,14 @@ interface ProductDao {
      * @param categoryId 分类ID
      * @return 返回该分类下的所有商品列表 Flow
      */
-    @Query("SELECT * FROM product WHERE category_id = :categoryId ORDER BY sort ASC")
+    @Query("SELECT * FROM product WHERE variety_id = :categoryId ORDER BY sort ASC")
     suspend fun getByCategoryId(categoryId: Long): List<ProductEntity>
 
     /**
      * 【推荐】响应式查询：获取所有商品，并按分类和排序字段排序。
      * @return 包含所有商品列表的 Flow
      */
-    @Query("SELECT * FROM product ORDER BY category_id ASC, sort ASC")
+    @Query("SELECT * FROM product ORDER BY variety_id ASC, sort ASC")
     fun getAll(): Flow<List<ProductEntity>>
 
 
@@ -74,7 +74,7 @@ interface ProductDao {
     @Query("""
         SELECT * FROM product 
         WHERE name LIKE '%' || :name || '%' 
-        ORDER BY category_id ASC, sort ASC
+        ORDER BY variety_id ASC, sort ASC
         """)
     fun getByName(name: String): Flow<List<ProductEntity>>
 
@@ -83,13 +83,13 @@ interface ProductDao {
      * 为 Paging 3.0 提供分页数据源。
      * @return 返回 PagingSource
      */
-    @Query("SELECT * FROM product ORDER BY category_id ASC, sort ASC")
+    @Query("SELECT * FROM product ORDER BY variety_id ASC, sort ASC")
     fun getAllForPagingSource(): PagingSource<Int, ProductEntity>
 
     @Transaction
     @Query("""
         SELECT * FROM product 
-        ORDER BY category_id ASC, sort ASC
+        ORDER BY variety_id ASC, sort ASC
     """)
-    fun getProductsWithCategoryPaged(): Flow<Map<ProductCategoryEntity, List<ProductEntity>>>
+    fun getProductsWithCategoryPaged(): Flow<Map<ProductVarietyEntity, List<ProductEntity>>>
 }

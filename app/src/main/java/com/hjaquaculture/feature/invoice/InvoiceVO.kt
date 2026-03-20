@@ -1,7 +1,7 @@
 package com.hjaquaculture.feature.invoice
 
 import androidx.compose.runtime.Immutable
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
 import com.hjaquaculture.domain.model.CombinedInvoice
 import com.hjaquaculture.domain.model.PurchasePayment
@@ -28,7 +28,7 @@ import com.hjaquaculture.domain.model.SalePayment
  */
 @Immutable
 data class InvoiceVO(
-    val symbol: InvoiceSymbol,
+    val symbol: TradeSymbol,
     val symbolDescription: String,
     val syntheticId: String,
     val originalId:Long,
@@ -53,7 +53,7 @@ fun CombinedInvoice.toVO(): InvoiceVO{
     return InvoiceVO(
         symbol = symbol,
         symbolDescription = symbol.description,
-        syntheticId = "${symbol.dbValue}_$id",
+        syntheticId = "${symbol.name}_$id",
         originalId = id,
         sn = sn,
 

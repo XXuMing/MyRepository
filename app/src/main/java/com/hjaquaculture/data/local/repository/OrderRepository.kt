@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.data.local.dao.CombinedOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao
@@ -50,12 +50,12 @@ class OrderRepository @Inject constructor(
      * @param symbol 订单类型
      * @param orderId 订单 ID
      */
-    fun getOrderDetail(symbol: OrderSymbol, orderId: Long): Flow<OrderItemsData> {
+    fun getOrderDetail(symbol: TradeSymbol, orderId: Long): Flow<OrderItemsData> {
         return when (symbol) {
-            OrderSymbol.SALE -> saleItemDao.getForSaleOrder(orderId).map{ list ->
+            TradeSymbol.SALE -> saleItemDao.getForSaleOrder(orderId).map{ list ->
                 OrderItemsData.Sale(list.map { it.toDomain() })
             }
-            OrderSymbol.PURCHASE -> purItemDao.getForPurchaseOrder(orderId).map{ list ->
+            TradeSymbol.PURCHASE -> purItemDao.getForPurchaseOrder(orderId).map{ list ->
                 OrderItemsData.Purchase(list.map { it.toDomain() })
             }
         }

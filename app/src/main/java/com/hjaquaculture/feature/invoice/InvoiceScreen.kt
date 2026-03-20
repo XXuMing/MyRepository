@@ -30,9 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -41,9 +38,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.InvoiceSymbol
-import com.hjaquaculture.common.utils.PaymentMethods
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.PaymentMethods
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.feature.AuthAction
 import com.hjaquaculture.feature.components.FilterGroupConfig
 import com.hjaquaculture.feature.components.SearchFilterBar
@@ -55,15 +52,16 @@ fun InvoiceScreen(
     onAction: (AuthAction) -> Unit,
     scaffoldPadding: PaddingValues,
 ) {
-    val listItems = vm.invoicePagingData.collectAsLazyPagingItems()
+    val invoiceList = vm.invoiceList.collectAsLazyPagingItems()
     val expandedItem by vm.expandedInvoiceItem.collectAsStateWithLifecycle()
     val detailState by vm.detailState.collectAsStateWithLifecycle()
 
     // ViewModel 中管理过滤状态（这里用本地 remember 演示）
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedSymbol by remember { mutableStateOf<InvoiceSymbol?>(null) }
-    var selectedStatus by remember { mutableStateOf<InvoiceStatus?>(null) }
-    var selectedPaymentMethod by remember { mutableStateOf<PaymentMethods?>(null) }
+    val searchQuery by vm.searchQuery.collectAsStateWithLifecycle()
+    val selectedSymbol by vm.selectedSymbol.collectAsStateWithLifecycle()
+    val selectedStatus by vm.selectedStatus.collectAsStateWithLifecycle()
+    // 支付方式没有过滤功能
+    val selectedPaymentMethod by vm.selectedPaymentMethod.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()
         .padding(scaffoldPadding)
@@ -73,46 +71,47 @@ fun InvoiceScreen(
 
         SearchFilterBar(
             searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it },
-            searchPlaceholder = "搜索账单号",
+            onSearchQueryChange = { vm.onSearchQueryChange(it) },
+            searchPlaceholder = "SN号/管理员/客户/供应商",
             filterGroups = listOf(
                 FilterGroupConfig(
                     title = "账单类型",
-                    options = InvoiceSymbol.entries,
+                    options = TradeSymbol.entries,
                     selected = selectedSymbol,
-                    onSelect = { selectedSymbol = it }
+                    onSelect = { vm.onSymbolSelected(it) }
                 ),
                 FilterGroupConfig(
                     title = "付款方式",
                     options = PaymentMethods.entries,
                     selected = selectedPaymentMethod,
-                    onSelect = { selectedPaymentMethod = it }
+                    onSelect = { vm.onPaymentMethodSelected(it) }
                 ),
                 FilterGroupConfig(
                     title = "账单状态",
                     options = InvoiceStatus.entries,
                     selected = selectedStatus,
-                    onSelect = { selectedStatus = it }
+                    onSelect = { vm.onStatusSelected(it) }
                 )
             )
         )
 
-        LazyColumn {
+        LazyColumn(modifier = Modifier.padding(bottom = 16.dp)) {
             items(
-                count = listItems.itemCount,
-                key = listItems.itemKey { it.syntheticId }
+                count = invoiceList.itemCount,
+                key = invoiceList.itemKey { it.syntheticId }
             ) { index ->
-                val item = listItems[index] ?: return@items
+                val item = invoiceList[index] ?: return@items
                 val isExpanded = expandedItem == item
-
                 Spacer(Modifier.height(8.dp))
-
                 InvoiceCard(
                     invoiceVO = item,
                     isExpanded = isExpanded,
                     detailState = detailState,
                     onToggle = { vm.toggleInvoice(item) }
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

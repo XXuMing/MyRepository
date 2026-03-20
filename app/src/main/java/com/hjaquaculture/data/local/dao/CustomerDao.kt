@@ -75,7 +75,7 @@ interface CustomerDao {
      * 当客户数据发生变化时，Flow 会自动发射最新的数据列表，非常适合在UI层进行观察。
      * @return 返回包含所有客户列表的 Flow
      */
-    @Query("SELECT * FROM customer ORDER BY id DESC")
+    @Query("SELECT * FROM customer ORDER BY created_at DESC")
     fun getAll(): Flow<List<CustomerEntity>>
 
     /**
@@ -93,6 +93,12 @@ interface CustomerDao {
      */
     @Query("SELECT * FROM customer WHERE name LIKE '%' || :name || '%'")
     suspend fun findByName(name: String): List<CustomerEntity>
+
+    /**
+     *
+     */
+    @Query("SELECT * FROM customer WHERE phone = :phone")
+    suspend fun getByPhone(phone: String): CustomerEntity?
 
     /**
      * 为 Paging 3.0 提供数据源，用于实现分页加载。

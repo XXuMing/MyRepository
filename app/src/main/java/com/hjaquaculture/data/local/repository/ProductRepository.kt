@@ -2,8 +2,8 @@ package com.hjaquaculture.data.local.repository
 
 import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
-import com.hjaquaculture.data.local.entity.ProductCategoryEntity
 import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -46,11 +46,11 @@ class ProductRepository @Inject constructor(
 
     // --- 分类 ---
 
-    suspend fun addCategory(category: ProductCategoryEntity): Long {
+    suspend fun addCategory(category: ProductVarietyEntity): Long {
         return categoryDao.insert(category)
     }
 
-    suspend fun updateCategory(category: ProductCategoryEntity) {
+    suspend fun updateCategory(category: ProductVarietyEntity) {
         categoryDao.update(category)
     }
 
@@ -62,24 +62,24 @@ class ProductRepository @Inject constructor(
         categoryDao.deleteById(categoryId)
     }
 
-    suspend fun getCategoryById(categoryId: Long): ProductCategoryEntity{
+    suspend fun getCategoryById(categoryId: Long): ProductVarietyEntity{
         return categoryDao.getById(categoryId)
     }
 
-    fun getCategoryByName(categoryName: String): Flow<List<ProductCategoryEntity>> {
+    fun getCategoryByName(categoryName: String): Flow<List<ProductVarietyEntity>> {
         return categoryDao.getByName(categoryName)
     }
 
-    fun getAllCategories(): Flow<List<ProductCategoryEntity>> {
+    fun getAllCategories(): Flow<List<ProductVarietyEntity>> {
         return categoryDao.getAll()
     }
 
     // ---  ---
-    fun getCategoryWithProducts(): Flow<Map<ProductCategoryEntity, List<ProductEntity>>> {
+    fun getCategoryWithProducts(): Flow<Map<ProductVarietyEntity, List<ProductEntity>>> {
         return categoryDao.getAllCategoriesWithProducts()
     }
 
-    suspend fun updateCategoriesOrder(categories: List<ProductCategoryEntity>) {
+    suspend fun updateCategoriesOrder(categories: List<ProductVarietyEntity>) {
         val updates = categories.mapIndexed { index, category ->
             category.copy(sort = index) // 将索引作为新的优先级
         }

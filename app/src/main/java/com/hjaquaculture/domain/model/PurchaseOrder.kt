@@ -1,7 +1,7 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
 import java.math.BigDecimal
 
 /**
@@ -22,6 +22,7 @@ data class PurchaseOrder(
     val remark: String,
     val approvedAt: Long?,    // 对应 Entity 的 expiredAt，语义化为“审核时间”
     val createdAt: Long,
+    val completedAt: Long?,
     val isDeleted: Boolean
 ) {
     // --- 业务规则 (Business Rules) ---

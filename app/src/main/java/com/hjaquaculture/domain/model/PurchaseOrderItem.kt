@@ -1,5 +1,6 @@
 package com.hjaquaculture.domain.model
 
+import com.hjaquaculture.common.base.StockUnit
 import java.math.BigDecimal
 
 /**
@@ -11,9 +12,9 @@ data class PurchaseOrderItem(
     val productId: Long,
     val productName: String, // 采购快照名
     val quantity: Int,
-    val quantityUnitId: Int,
+    val quantityUnit: StockUnit,
     val weight: Int,
-    val weightUnitId: Int,
+    val weightUnit: StockUnit,
     val unitPrice: Long,      // 进货单价（分）
     val subtotal: Long,       // 小计（分）
     val createdAt: Long

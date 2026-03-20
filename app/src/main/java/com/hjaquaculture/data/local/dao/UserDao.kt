@@ -69,7 +69,7 @@ interface UserDao {
      * 返回一个 Flow，当数据变化时，它会自动发射最新的用户列表。非常适合在 UI 层观察。
      * @return 包含所有用户列表的 Flow
      */
-    @Query("SELECT * FROM user")
+    @Query("SELECT * FROM user ORDER BY created_at DESC")
     fun getAll(): Flow<List<UserEntity>>
 
     /**
@@ -79,7 +79,7 @@ interface UserDao {
      * @return 返回用户对象，如果不存在则为 null
      */
     @Query("SELECT * FROM user WHERE id = :userId")
-    suspend fun getById(userId: Int): UserEntity?
+    fun getById(userId: Long): Flow<UserEntity?>
 
     /**
      * 一次性查询：根据账户名获取单个用户。

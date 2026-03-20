@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.hjaquaculture.common.base.StockUnit
 
 /**
  * 销售订单明细
@@ -13,9 +14,9 @@ import androidx.room.PrimaryKey
  * @param productId 商品ID
  * @param productName 商品名称(快照)
  * @param quantity 数量
- * @param quantityUnitId 数量单位（件、箱、袋）
+ * @param quantityUnit 数量单位
  * @param weight 重量（斤）
- * @param weightUnitId 重量单位（斤）
+ * @param weightUnit 重量单位
  * @param unitPrice 单价（元）
  * @param subtotal 小计（元）
  */
@@ -35,23 +36,11 @@ import androidx.room.PrimaryKey
             childColumns = ["product_id"],
             onDelete = ForeignKey.NO_ACTION,
             onUpdate = ForeignKey.NO_ACTION
-        ),
-        ForeignKey(
-            entity = MeasureUnitEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["quantity_unit_id"],
-        ),
-        ForeignKey(
-            entity = MeasureUnitEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["weight_unit_id"]
         )
     ],
     indices = [
         Index(value = ["order_id"]),
         Index(value = ["product_id"]),
-        Index(value = ["quantity_unit_id"]),
-        Index(value = ["weight_unit_id"])
     ]
 )
 data class SaleOrderItemEntity(
@@ -70,14 +59,14 @@ data class SaleOrderItemEntity(
     @ColumnInfo(name = "quantity")
     val quantity : Int,
 
-    @ColumnInfo(name = "quantity_unit_id")
-    val quantityUnitId : Int,
+    @ColumnInfo(name = "quantity_unit")
+    val quantityUnit : StockUnit,
 
     @ColumnInfo(name = "weight")
     val weight : Int,
 
-    @ColumnInfo(name = "weight_unit_id")
-    val weightUnitId : Int,
+    @ColumnInfo(name = "weight_unit")
+    val weightUnit : StockUnit,
 
     @ColumnInfo(name = "unit_price")
     val unitPrice : Long,

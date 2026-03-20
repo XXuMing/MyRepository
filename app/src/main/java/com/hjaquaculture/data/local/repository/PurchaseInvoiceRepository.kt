@@ -4,8 +4,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.room.withTransaction
-import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.SnPrefix
+import com.hjaquaculture.common.base.OrderManager
+import com.hjaquaculture.common.base.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.entity.PurchaseInvoiceEntity

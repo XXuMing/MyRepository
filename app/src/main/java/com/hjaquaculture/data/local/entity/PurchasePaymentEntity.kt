@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.hjaquaculture.common.utils.PaymentMethods
+import com.hjaquaculture.common.base.PaymentMethods
 
 /**
  * 采购流水

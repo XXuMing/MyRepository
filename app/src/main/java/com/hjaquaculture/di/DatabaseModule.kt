@@ -10,7 +10,8 @@ import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.CombinedOrderDao
 import com.hjaquaculture.data.local.dao.CombinedPeopleDao
 import com.hjaquaculture.data.local.dao.CustomerDao
-import com.hjaquaculture.data.local.dao.MeasureUnitDao
+import com.hjaquaculture.data.local.dao.InventoryDao
+import com.hjaquaculture.data.local.dao.InventoryLogDao
 import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
 import com.hjaquaculture.data.local.dao.ProductPriceHistoryDao
@@ -22,6 +23,8 @@ import com.hjaquaculture.data.local.dao.SaleInvoiceDao
 import com.hjaquaculture.data.local.dao.SaleOrderDao
 import com.hjaquaculture.data.local.dao.SaleOrderItemDao
 import com.hjaquaculture.data.local.dao.SalePaymentDao
+import com.hjaquaculture.data.local.dao.StocktakingDao
+import com.hjaquaculture.data.local.dao.StocktakingDetailDao
 import com.hjaquaculture.data.local.dao.SupplierDao
 import com.hjaquaculture.data.local.dao.UserDao
 import dagger.Module
@@ -59,10 +62,6 @@ object DatabaseModule {
         .build()
     }
 
-    @Provides
-    fun provideUnitDao (db: LocalDatabase): MeasureUnitDao {
-        return db.measureUnitDao()
-    }
 
     @Provides
     fun provideUserDao (db: LocalDatabase): UserDao {
@@ -92,6 +91,26 @@ object DatabaseModule {
     @Provides
     fun provideProductPriceHistoryDao (db: LocalDatabase): ProductPriceHistoryDao {
         return db.productPriceHistoryDao()
+    }
+
+    @Provides
+    fun provideStocktakingDao(db: LocalDatabase): StocktakingDao {
+        return db.stocktakingDao()
+    }
+
+    @Provides
+    fun provideStocktakingItemDao(db: LocalDatabase): StocktakingDetailDao {
+        return db.stocktakingDetailDao()
+    }
+
+    @Provides
+    fun provideInventoryDao (db: LocalDatabase): InventoryDao {
+        return db.inventoryDao()
+    }
+
+    @Provides
+    fun provideInventoryLogDao (db: LocalDatabase): InventoryLogDao {
+        return db.inventoryLogDao()
     }
 
     @Provides

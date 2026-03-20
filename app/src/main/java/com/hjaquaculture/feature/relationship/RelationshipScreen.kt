@@ -23,7 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.hjaquaculture.common.base.PartySymbol
 import com.hjaquaculture.feature.AuthAction
+import com.hjaquaculture.feature.components.FilterGroupConfig
+import com.hjaquaculture.feature.components.SearchFilterBar
 
 @Composable
 fun RelationshipScreen(
@@ -32,20 +35,38 @@ fun RelationshipScreen(
     scaffoldPadding: PaddingValues,
 ) {
     val listItems = vm.relationshipPagingData.collectAsLazyPagingItems()
+
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedSymbol by remember { mutableStateOf<PartySymbol?>(null) }
+
     Column(modifier = Modifier.fillMaxWidth()
         .padding(scaffoldPadding)
         .padding(horizontal = 12.dp)
     )
     {
+
+        SearchFilterBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            searchPlaceholder = "账户名/姓名/昵称/电话/角色",          // 每个页面可自定义
+            filterGroups = listOf(
+                FilterGroupConfig(
+                    title = "业务主体",
+                    options = PartySymbol.entries,
+                    selected = selectedSymbol,
+                    onSelect = { selectedSymbol = it }
+                )
+            )
+        )
+
         LazyColumn {
             items(
                 count = listItems.itemCount,
                 key = listItems.itemKey { it.syntheticId }
             ){
-                    index ->
+                index ->
                 val item = listItems[index]
                 item?.let { RelationshipCard(item) }
-
             }
         }
     }

@@ -3,7 +3,7 @@ package com.hjaquaculture.domain.model
 /**
  * 商品分类领域模型
  */
-data class ProductCategory(
+data class ProductVariety(
     val id: Long,
     val name: String,
     val sort: Int
@@ -28,8 +28,8 @@ data class ProductCategory(
 /**
  * 分类与商品关联模型（领域层复合对象）
  */
-data class CategoryWithProducts(
-    val category: ProductCategory,
+data class VarietyWithProducts(
+    val category: ProductVariety,
     val products: List<Product>
 ) {
     /**

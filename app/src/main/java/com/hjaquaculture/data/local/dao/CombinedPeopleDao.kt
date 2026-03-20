@@ -4,7 +4,6 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import com.hjaquaculture.data.local.entity.CombinedPeopleView
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CombinedPeopleDao {
@@ -27,6 +26,6 @@ interface CombinedPeopleDao {
     fun pagingSource(query: String, symbol: String?): PagingSource<Int, CombinedPeopleView>
 
     @Query("SELECT COUNT(*) FROM combined_people_view")
-    fun getCount(): Flow<Int>
+    suspend fun getCount(): Int
 
 }

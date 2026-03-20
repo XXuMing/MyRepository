@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
@@ -44,12 +44,12 @@ class InvoiceRepository @Inject constructor(
         }
     }
 
-    fun getInvoiceDetail(symbol: InvoiceSymbol, invoiceId: Long): Flow<InvoicePaymentsData> {
+    fun getInvoiceDetail(symbol: TradeSymbol, invoiceId: Long): Flow<InvoicePaymentsData> {
         return when (symbol) {
-            InvoiceSymbol.SALE -> spDao.getByInvoiceId(invoiceId).map { list ->
+            TradeSymbol.SALE -> spDao.getByInvoiceId(invoiceId).map { list ->
                 InvoicePaymentsData.Sale(list.map{ it.toDomain()})
             }
-            InvoiceSymbol.PURCHASE -> ppDao.getByInvoiceId(invoiceId).map{ list ->
+            TradeSymbol.PURCHASE -> ppDao.getByInvoiceId(invoiceId).map{ list ->
                 InvoicePaymentsData.Purchase(list.map{ it.toDomain()})
             }
         }

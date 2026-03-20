@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.hjaquaculture.common.base.OrderStatus
 import com.hjaquaculture.data.local.entity.SaleOrderEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -59,7 +60,21 @@ interface SaleOrderDao {
     @Query("SELECT * FROM sale_order WHERE customer_id = :customerId ORDER BY created_at DESC")
     fun getByCustomer(customerId: Long): Flow<List<SaleOrderEntity>>
 
-    @Query("SELECT * FROM sale_order ORDER BY created_at DESC")
-    fun getPagingSource(): PagingSource<Int, SaleOrderEntity>
+    @Query("SELECT * FROM sale_order WHERE order_status = :status ORDER BY created_at DESC")
+    fun getByStatus(status: OrderStatus): Flow<List<SaleOrderEntity>>
+
+    @Query("""
+        SELECT * FROM sale_order 
+        WHERE (:customerId IS NULL OR customer_id = :customerId)
+        AND (:type IS NULL OR order_type = :type)
+        AND (:status IS NULL OR order_status = :status)
+        AND (:sn IS NULL OR sn = :sn)
+    """)
+    fun getPagingSource(
+        sn: String,
+        customerId: Long? = null,
+        type: String?,
+        status: OrderStatus? = null
+    ): PagingSource<Int, SaleOrderEntity>
 
 }

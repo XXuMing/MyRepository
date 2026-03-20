@@ -2,9 +2,9 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.TradeSymbol
 
 /**
  * 合并订单视图
@@ -27,7 +27,7 @@ import com.hjaquaculture.common.utils.OrderSymbol
 @DatabaseView(
     viewName = "combined_order_view",
     value = """
-SELECT 'SALE_ORDER' AS symbol,
+SELECT 'SALE' AS symbol,
     s.id , s.sn , s.creator_id , s.invoice_id , s.invoice_sn ,
     u.name AS creator_name ,
     s.customer_id AS partner_id ,
@@ -39,7 +39,7 @@ LEFT JOIN user u ON s.creator_id = u.id
 LEFT JOIN customer c ON s.customer_id = c.id
 
 UNION ALL
-SELECT 'PUR_ORDER' AS symbol,
+SELECT 'PURCHASE' AS symbol,
     p.id , p.sn , p.creator_id , p.invoice_id , p.invoice_sn ,
     u.name AS user_name ,
     p.supplier_id AS partner_id ,
@@ -53,7 +53,7 @@ LEFT JOIN supplier sup ON p.supplier_id = sup.id
 )
 data class CombinedOrderView(
     @ColumnInfo("symbol")
-    val symbol: OrderSymbol,
+    val symbol: TradeSymbol,
 
     @ColumnInfo("id")
     val id: Long,

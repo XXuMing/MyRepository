@@ -6,17 +6,23 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.PaymentMethods
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.data.local.repository.InvoiceRepository
 import com.hjaquaculture.domain.model.InvoicePaymentsData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -29,11 +35,53 @@ class InvoiceViewModel @Inject constructor(
     private val repo: InvoiceRepository
 ) : ViewModel() {
 
-    val invoicePagingData: Flow<PagingData<InvoiceVO>> = repo.getCombinedInvoices("", null, null)
-        .map { pagingData ->
-            pagingData.map { domain ->
-                try { domain.toVO() } catch (e: Exception) {
-                    Log.e("VO_ERROR", "转换失败，数据条目ID: ${domain.id}", e); throw e
+    // 过滤状态
+    private val _searchQuery = MutableStateFlow("")
+    private val _selectedSymbol = MutableStateFlow<TradeSymbol?>(null)
+    private val _selectedStatus = MutableStateFlow<InvoiceStatus?>(null)
+    private val _selectedPaymentMethod = MutableStateFlow<PaymentMethods?>(null)
+
+    // 暴露给 UI 观察
+    val searchQuery = _searchQuery.asStateFlow()
+    val selectedSymbol = _selectedSymbol.asStateFlow()
+    val selectedStatus = _selectedStatus.asStateFlow()
+    val selectedPaymentMethod = _selectedPaymentMethod.asStateFlow()
+
+    // 过滤动作
+    fun onSearchQueryChange(query: String) { _searchQuery.value = query }
+    fun onSymbolSelected(symbol: TradeSymbol?) { _selectedSymbol.value = symbol }
+    fun onStatusSelected(status: InvoiceStatus?) { _selectedStatus.value = status }
+    fun onPaymentMethodSelected(method: PaymentMethods?) { _selectedPaymentMethod.value = method }
+
+    // 私有数据类，避免多参数 combine 难以阅读
+    private data class FilterParams(
+        val query: String,
+        val symbol: TradeSymbol?,
+        val status: InvoiceStatus?,
+        val paymentMethod: PaymentMethods?
+    )
+
+    // 合并过滤条件，任一变化都触发重新分页
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val invoiceList: Flow<PagingData<InvoiceVO>> = combine(
+        _searchQuery,
+        _selectedSymbol,
+        _selectedStatus,
+        _selectedPaymentMethod
+    ) { query, symbol, status, paymentMethod ->
+        FilterParams(query, symbol, status, paymentMethod)
+    }
+        .debounce(300)
+        .flatMapLatest { params ->
+            repo.getCombinedInvoices(
+                query = params.query,
+                symbol = params.symbol?.name,
+                status = params.status?.code?.toString()
+            ).map { pagingData ->
+                pagingData.map { domain ->
+                    try { domain.toVO() } catch (e: Exception) {
+                        Log.e("VO_ERROR", "转换失败，数据条目ID: ${domain.id}", e); throw e
+                    }
                 }
             }
         }.cachedIn(viewModelScope)

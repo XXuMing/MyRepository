@@ -2,8 +2,8 @@ package com.hjaquaculture.feature.product
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjaquaculture.data.local.entity.ProductCategoryEntity
 import com.hjaquaculture.data.local.entity.ProductEntity
+import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import com.hjaquaculture.data.local.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -112,7 +112,7 @@ class ProductViewModel @Inject constructor(
 
             // 为了让它在最前面，新项的 sort 应该比当前最小的还要小
             // 或者更简单的做法：插入后统一调用一次 syncOrderToDb 重新刷一遍 index
-            repository.addCategory(ProductCategoryEntity(name = finalName, sort = minSort - 1))
+            repository.addCategory(ProductVarietyEntity(name = finalName, sort = minSort - 1))
 
             _reorderSortOrder.value = emptyList()
 
@@ -127,7 +127,7 @@ class ProductViewModel @Inject constructor(
         // 使用负数 ID 或大时间戳标记临时项
         val tempId = System.currentTimeMillis()
         val newCategory = CategoryWithProductsVO(
-            category = ProductCategoryEntity(id = tempId, name = "", sort = -1), // 给予最小 sort 预设
+            category = ProductVarietyEntity(id = tempId, name = "", sort = -1), // 给予最小 sort 预设
             isInitialEditing = true
         )
         // 核心修改：确保它在临时列表的首位

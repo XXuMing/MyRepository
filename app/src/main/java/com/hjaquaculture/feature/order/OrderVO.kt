@@ -1,7 +1,8 @@
 package com.hjaquaculture.feature.order
 
 import androidx.compose.runtime.Immutable
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.StockUnit
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.common.utils.TimeUtils.toFormattedString
 import com.hjaquaculture.domain.model.CombinedOrder
 import com.hjaquaculture.domain.model.PurchaseOrderItem
@@ -29,7 +30,7 @@ import com.hjaquaculture.domain.model.SaleOrderItem
  */
 @Immutable
 data class OrderVO(
-    val symbol: OrderSymbol,
+    val symbol: TradeSymbol,
     val symbolDescription: String,
     val syntheticId: String,
     val originalId:Long,
@@ -58,7 +59,7 @@ fun CombinedOrder.toVO(): OrderVO{
     return OrderVO(
         symbol = symbol,
         symbolDescription = symbol.description,
-        syntheticId = "${symbol.dbValue}_$id",
+        syntheticId = "${symbol.name}_$id",
         originalId = id,
         sn = sn,
 
@@ -82,15 +83,15 @@ fun CombinedOrder.toVO(): OrderVO{
  * 订单明细 视图对象
  */
 data class OrderItemVO(
-    val symbol: OrderSymbol,
+    val symbol: TradeSymbol,
     val id: Long,
     val orderId: Long,
     val productId: Long,
     val productName: String,
     val quantity: Int,
-    val quantityUnitId: Int,
+    val quantityUnit: StockUnit,
     val weight: Int,
-    val weightUnitId: Int,
+    val weightUnit: StockUnit,
     val unitPrice: Long,
     val subtotal: Long,
     val createdAt: Long
@@ -99,7 +100,7 @@ data class OrderItemVO(
 /**
  * 将 SaleOrderItemEntity 转换为 OrderItemVO
  */
-fun SaleOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
+fun SaleOrderItem.toVO(symbol: TradeSymbol): OrderItemVO {
     return OrderItemVO(
         symbol = symbol,
         id = id,
@@ -107,9 +108,9 @@ fun SaleOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
         productId = productId,
         productName = productName,
         quantity = quantity,
-        quantityUnitId = quantityUnitId,
+        quantityUnit = quantityUnit,
         weight = weight,
-        weightUnitId = weightUnitId,
+        weightUnit = weightUnit,
         unitPrice = unitPrice,
         subtotal = subtotal,
         createdAt = createdAt
@@ -119,7 +120,7 @@ fun SaleOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
 /**
  * 将 PurchaseOrderItemEntity 转换为 OrderItemVO
  */
-fun PurchaseOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
+fun PurchaseOrderItem.toVO(symbol: TradeSymbol): OrderItemVO {
     return OrderItemVO(
         symbol = symbol,
         id = id,
@@ -127,9 +128,9 @@ fun PurchaseOrderItem.toVO(symbol: OrderSymbol): OrderItemVO {
         productId = productId,
         productName = productName,
         quantity = quantity,
-        quantityUnitId = quantityUnitId,
+        quantityUnit = quantityUnit,
         weight = weight,
-        weightUnitId = weightUnitId,
+        weightUnit = weightUnit,
         unitPrice = unitPrice,
         subtotal = subtotal,
         createdAt = createdAt

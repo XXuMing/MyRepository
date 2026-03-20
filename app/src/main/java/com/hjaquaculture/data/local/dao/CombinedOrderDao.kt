@@ -35,6 +35,6 @@ interface CombinedOrderDao {
     fun getByInvoiceId(symbol: String?,invoiceId: Long): Flow<List<CombinedOrderView>>
 
     @Query("SELECT COUNT(*) FROM combined_order_view")
-    fun getCount(): Flow<Int>
+    suspend fun getCount(): Int
 
 }

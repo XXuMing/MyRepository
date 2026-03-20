@@ -1,8 +1,8 @@
 package com.hjaquaculture.data.local.repository
 
 import androidx.room.withTransaction
-import com.hjaquaculture.common.utils.OrderManager
-import com.hjaquaculture.common.utils.SnPrefix
+import com.hjaquaculture.common.base.OrderManager
+import com.hjaquaculture.common.base.SnPrefix
 import com.hjaquaculture.data.local.LocalDatabase
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao

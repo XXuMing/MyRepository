@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.hjaquaculture.data.local.dao.CombinedPeopleDao
 import com.hjaquaculture.data.local.dao.CustomerDao
+import com.hjaquaculture.data.local.dao.SupplierDao
 import com.hjaquaculture.data.local.dao.UserDao
 import com.hjaquaculture.data.local.mapper.toDomain
 import com.hjaquaculture.domain.model.CombinedPeople
@@ -19,6 +20,7 @@ data class RelationshipRepository @Inject constructor(
     private val combinedDao: CombinedPeopleDao,
     private val uDao: UserDao,
     private val cDao: CustomerDao,
+    private val sDao: SupplierDao
 ) {
     fun getCombinedPeople(query: String, symbol: String?): Flow<PagingData<CombinedPeople>> {
         return Pager(

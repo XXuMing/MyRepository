@@ -30,6 +30,7 @@ fun SaleOrderEntity.toDomain(): SaleOrder {
         remark = this.remark ?: "",
         expiredAt = this.expiredAt,
         createdAt = this.createdAt,
+        completedAt = this.completedAt,
         isDeleted = this.isDeleted
     )
 }
@@ -65,9 +66,9 @@ fun SaleOrderItemEntity.toDomain(): SaleOrderItem {
         productId = this.productId,
         productName = this.productName,
         quantity = this.quantity,
-        quantityUnitId = this.quantityUnitId,
+        quantityUnit = this.quantityUnit,
         weight = this.weight,
-        weightUnitId = this.weightUnitId,
+        weightUnit = this.weightUnit,
         unitPrice = this.unitPrice,
         subtotal = this.subtotal,
         createdAt = this.createdAt
@@ -82,9 +83,9 @@ fun SaleOrderItem.toEntity(): SaleOrderItemEntity {
         productId = this.productId,
         productName = this.productName,
         quantity = this.quantity,
-        quantityUnitId = this.quantityUnitId,
+        quantityUnit = this.quantityUnit,
         weight = this.weight,
-        weightUnitId = this.weightUnitId,
+        weightUnit = this.weightUnit,
         unitPrice = this.unitPrice,
         subtotal = this.subtotal,
         createdAt = this.createdAt
@@ -111,6 +112,7 @@ fun PurchaseOrderEntity.toDomain(): PurchaseOrder {
         remark = this.remark ?: "",
         approvedAt = this.expiredAt, // 映射到 approvedAt
         createdAt = this.createdAt,
+        completedAt = this.completedAt,
         isDeleted = this.isDeleted
     )
 }
@@ -146,9 +148,9 @@ fun PurchaseOrderItemEntity.toDomain(): PurchaseOrderItem {
         productId = this.productId,
         productName = this.productName,
         quantity = this.quantity,
-        quantityUnitId = this.quantityUnitId,
+        quantityUnit = this.quantityUnit,
         weight = this.weight,
-        weightUnitId = this.weightUnitId,
+        weightUnit = this.weightUnit,
         unitPrice = this.unitPrice,
         subtotal = this.subtotal,
         createdAt = this.createdAt
@@ -162,12 +164,12 @@ fun PurchaseOrderItem.toEntity(): PurchaseOrderItemEntity {
         productId = this.productId,
         productName = this.productName,
         quantity = this.quantity,
-        quantityUnitId = this.quantityUnitId,
+        quantityUnit = this.quantityUnit,
         weight = this.weight,
-        weightUnitId = this.weightUnitId,
+        weightUnit = this.weightUnit,
         unitPrice = this.unitPrice,
         subtotal = this.subtotal,
-        createdAt = this.createdAt
+        createdAt = this.createdAt,
     )
 }
 

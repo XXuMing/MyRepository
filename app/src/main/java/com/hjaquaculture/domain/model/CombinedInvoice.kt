@@ -1,13 +1,13 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.TradeSymbol
 
 /**
  * 财务发票概要领域模型
  */
 data class CombinedInvoice(
-    val symbol: InvoiceSymbol,
+    val symbol: TradeSymbol,
     val id: Long,
     val sn: String,
     val partnerId: Long,
@@ -26,12 +26,12 @@ data class CombinedInvoice(
     /**
      * 判断是否为收入性质
      */
-    val isRevenue: Boolean get() = symbol == InvoiceSymbol.SALE
+    val isRevenue: Boolean get() = symbol == TradeSymbol.SALE
 
     /**
      * 判断是否为支出性质
      */
-    val isExpense: Boolean get() = symbol == InvoiceSymbol.PURCHASE
+    val isExpense: Boolean get() = symbol == TradeSymbol.PURCHASE
 
     /**
      * 格式化总金额显示

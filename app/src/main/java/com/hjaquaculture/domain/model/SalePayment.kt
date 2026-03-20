@@ -1,6 +1,6 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.PaymentMethods
+import com.hjaquaculture.common.base.PaymentMethods
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

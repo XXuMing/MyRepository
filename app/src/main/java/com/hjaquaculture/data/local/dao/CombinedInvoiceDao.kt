@@ -4,7 +4,6 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import com.hjaquaculture.data.local.entity.CombinedInvoiceView
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CombinedInvoiceDao {
@@ -29,6 +28,6 @@ interface CombinedInvoiceDao {
     ): PagingSource<Int, CombinedInvoiceView>
 
     @Query("SELECT COUNT(*) FROM combined_invoice_view")
-    fun getCount(): Flow<Int>
+    suspend fun getCount(): Int
 
 }

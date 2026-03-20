@@ -2,8 +2,8 @@ package com.hjaquaculture.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.hjaquaculture.common.utils.InvoiceStatus
-import com.hjaquaculture.common.utils.InvoiceSymbol
+import com.hjaquaculture.common.base.InvoiceStatus
+import com.hjaquaculture.common.base.TradeSymbol
 
 /**
  * 发票概要 视图对象
@@ -24,7 +24,7 @@ import com.hjaquaculture.common.utils.InvoiceSymbol
 @DatabaseView(
     viewName = "combined_invoice_view",
     value = """
-SELECT 'SALE_INVOICE' AS symbol,
+SELECT 'SALE' AS symbol,
     id , sn ,
     customer_id AS partner_id , customer_name AS partner_name ,
     creator_id , creator_name ,
@@ -33,7 +33,7 @@ SELECT 'SALE_INVOICE' AS symbol,
     status , remark , created_at , is_deleted
 FROM sale_invoice
 UNION ALL
-SELECT 'PUR_INVOICE' AS symbol ,
+SELECT 'PURCHASE' AS symbol ,
     id , sn ,
     supplier_id AS partner_id , supplier_name AS partner_name ,
     creator_id , creator_name , 
@@ -45,7 +45,7 @@ FROM purchase_invoice
 )
 data class CombinedInvoiceView(
     @ColumnInfo("symbol")
-    val symbol: InvoiceSymbol,
+    val symbol: TradeSymbol,
 
     @ColumnInfo("id")
     val id: Long,

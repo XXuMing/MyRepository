@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
 
 /**
  * 采购订单
@@ -23,6 +23,7 @@ import com.hjaquaculture.common.utils.OrderStatus
  * @param expiredAt 审核时间
  * @param remark 备注
  * @param createdAt 创建时间
+ * @param completedAt 完成时间
  * @param isDeleted 是否删除
  */
 @Entity(
@@ -90,10 +91,10 @@ data class PurchaseOrderEntity (
     val orderStatus: OrderStatus = OrderStatus.DRAFT,
 
     @ColumnInfo(name = "total_price")
-    val totalPrice: Long,
+    val totalPrice: Long = 0,
 
     @ColumnInfo(name = "total_quantity")
-    val totalQuantity: Int,
+    val totalQuantity: Int = 0,
 
     @ColumnInfo(name = "remark")
     val remark: String ?= null,
@@ -103,6 +104,9 @@ data class PurchaseOrderEntity (
 
     @ColumnInfo(name = "created_at")
     val createdAt : Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "completed_at")
+    val completedAt: Long? = null,
 
     @ColumnInfo(name = "is_deleted")
     val isDeleted: Boolean = false,

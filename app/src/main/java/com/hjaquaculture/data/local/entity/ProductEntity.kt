@@ -7,22 +7,26 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.hjaquaculture.common.base.StockUnit
 
 /**
  * 商品
  * @param id 主键
  * @param name 商品名
  * @param currentPrice 当前价格
- * @param categoryId 分类
+ * @param priceUpdatedAt 价格最后更新时间
+ * @param varietyId 商品品类
+ * @param StockUnit 库存单位
+ * @param isAvailable 是否上架
  * @param sort 排序
  */
 @Entity(
     tableName = "product",
     foreignKeys =[
         ForeignKey(
-            entity = ProductCategoryEntity::class,
+            entity = ProductVarietyEntity::class,
             parentColumns = ["id"],
-            childColumns = ["category_id"],
+            childColumns = ["variety_id"],
             onDelete = ForeignKey.CASCADE,
             onUpdate = ForeignKey.CASCADE
         )
@@ -30,7 +34,7 @@ import androidx.room.Relation
     indices = [
         Index(value = ["name"], unique = true),
         Index(name="is_available_index",value = ["is_available"]),
-        Index(name="index_product_category_id_sort",value = ["category_id","sort"], orders = [Index.Order.ASC, Index.Order.ASC])
+        Index(name="index_product_variety_id_sort",value = ["variety_id","sort"], orders = [Index.Order.ASC, Index.Order.ASC])
     ]
 )
 data class ProductEntity(
@@ -46,8 +50,14 @@ data class ProductEntity(
     @ColumnInfo(name = "current_price")
     val currentPrice : Long = 0,
 
-    @ColumnInfo(name = "category_id")
-    val categoryId : Long,
+    @ColumnInfo(name = "price_updated_at")
+    val priceUpdatedAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "variety_id")
+    val varietyId : Long,
+
+    @ColumnInfo(name = "stock_unit")
+    val stockUnit: StockUnit,
 
     @ColumnInfo(name = "is_available")
     val isAvailable : Boolean = true,
@@ -59,6 +69,6 @@ data class ProductEntity(
 
 data class ProductWithCategoryEntity(
     @Embedded val product: ProductEntity,
-    @Relation(parentColumn = "category_id", entityColumn = "id")
-    val category: ProductCategoryEntity
+    @Relation(parentColumn = "varietyId", entityColumn = "id")
+    val category: ProductVarietyEntity
 )

@@ -47,6 +47,17 @@ interface SupplierDao {
     fun getById(supplierId: Long): Flow<SupplierEntity?>
 
     /**
+     *
+     */
+    @Query("SELECT * FROM supplier WHERE name LIKE '%' || :name || '%' ORDER BY name ASC")
+    fun searchByName(name: String): Flow<List<SupplierEntity>>
+
+    /**
+     *
+     */
+    @Query("SELECT * FROM supplier WHERE phone = :phone")
+    suspend fun getByPhone(phone: String): SupplierEntity?
+    /**
      * 为 Paging 3 提供分页数据源，获取所有供应商。
      * @return 返回 PagingSource
      */

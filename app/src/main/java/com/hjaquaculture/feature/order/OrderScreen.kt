@@ -29,9 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,9 +37,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.TradeSymbol
 import com.hjaquaculture.feature.components.FilterGroupConfig
 import com.hjaquaculture.feature.components.SearchFilterBar
 
@@ -51,16 +48,14 @@ fun OrderScreen(
     vm: OrderViewModel = hiltViewModel(),
     scaffoldPadding: PaddingValues
 ){
-    val listItems = vm.orderList.collectAsLazyPagingItems()
+    val orderList = vm.orderList.collectAsLazyPagingItems()
     val expandedItem by vm.expandedOrderItem.collectAsStateWithLifecycle()
     val detailState by vm.detailState.collectAsStateWithLifecycle()
 
-
-    // ViewModel 中管理过滤状态（这里用本地 remember 演示）
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedSymbol by remember { mutableStateOf<OrderSymbol?>(null) }
-    var selectedDeliveryMethod by remember { mutableStateOf<DeliveryMethod?>(null) }
-    var selectedStatus by remember { mutableStateOf<OrderStatus?>(null) }
+    val searchQuery by vm.searchQuery.collectAsStateWithLifecycle()
+    val selectedSymbol by vm.selectedSymbol.collectAsStateWithLifecycle()
+    val selectedDeliveryMethod by vm.selectedDeliveryMethod.collectAsStateWithLifecycle()
+    val selectedStatus by vm.selectedStatus.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()
         .padding(scaffoldPadding)
@@ -68,47 +63,51 @@ fun OrderScreen(
     )
     {
 
-        // ✅ 直接调用组件，传入各页面专属的枚举配置
         SearchFilterBar(
             searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it },
-            searchPlaceholder = "搜索订单号",          // 每个页面可自定义
+            onSearchQueryChange = { vm.onSearchQueryChange(it) },
+            searchPlaceholder = "SN号/管理员/客户/供应商",          // 每个页面可自定义
             filterGroups = listOf(
                 FilterGroupConfig(
                     title = "订单类型",
-                    options = OrderSymbol.entries,
+                    options = TradeSymbol.entries,
                     selected = selectedSymbol,
-                    onSelect = { selectedSymbol = it }
+                    onSelect = { vm.onSymbolSelected(it) }
                 ),
                 FilterGroupConfig(
                     title = "交付方式",
                     options = DeliveryMethod.entries,
                     selected = selectedDeliveryMethod,
-                    onSelect = { selectedDeliveryMethod = it }
+                    onSelect = { vm.onDeliveryMethodSelected(it) }
                 ),
                 FilterGroupConfig(
                     title = "订单状态",
                     options = OrderStatus.entries,     // 所有枚举值
                     selected = selectedStatus,
-                    onSelect = { selectedStatus = it } // it 可能是 null（全部）
+                    onSelect = { vm.onStatusSelected(it) } // it 可能是 null（全部）
                 )
             )
         )
 
+        // 1. 逻辑分片：计算总行数
+        val rowCount = (orderList.itemCount + 2) / 3
 
-        LazyColumn{
+        LazyColumn {
             items(
-                count = listItems.itemCount,
-                key = listItems.itemKey { it.syntheticId }
+                count = orderList.itemCount,
+                key = orderList.itemKey { it.syntheticId }
             ) { index ->
-                val isExpanded = expandedItem == listItems[index]
+                val isExpanded = expandedItem == orderList[index]
                 Spacer(Modifier.height(8.dp))
                 OrderCard(
-                    orderVO = listItems[index] ?: return@items,
+                    orderVO = orderList[index] ?: return@items,
                     isExpanded = isExpanded,
                     detailState = detailState,
-                    onToggle = {  vm.toggleOrder(listItems[index] ?: return@OrderCard) }
+                    onToggle = { vm.toggleOrder(orderList[index] ?: return@OrderCard) }
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

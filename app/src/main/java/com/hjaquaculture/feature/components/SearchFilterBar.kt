@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -82,7 +84,6 @@ interface FilterableOption {
     val label: String
 }
 
-
 // =============================================================================
 // 二、主组件 SearchFilterBar
 // =============================================================================
@@ -95,8 +96,8 @@ interface FilterableOption {
  * └─────────────────────────────────────┴───────┘
  *   ↓ 点击按钮后，以动画展开下方面板
  * ┌─────────────────────────────────────────────┐
- * │  订单状态：[草稿] [预定] [确认✓] [完成] [作废] │
- * │  付款方式：[微信] [支付宝✓] [现金] [其他]     │
+ * │  订单状态：[草稿] [预定] [确认✓] [完成] [作废]    │
+ * │  付款方式：[微信] [支付宝✓] [现金] [其他]         │
  * └─────────────────────────────────────────────┘
  *
  * 使用示例（在 OrderScreen 中）：
@@ -218,6 +219,7 @@ fun SearchFilterBar(
                 )
             }
         }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),thickness = 1.dp,color = Color.LightGray)
 
         // ── 第二部分：过滤面板（AnimatedVisibility 控制显示/隐藏） ────────────
         // AnimatedVisibility 会在 visible 变化时，执行 enter/exit 动画

@@ -1,14 +1,14 @@
 package com.hjaquaculture.domain.model
 
-import com.hjaquaculture.common.utils.DeliveryMethod
-import com.hjaquaculture.common.utils.OrderStatus
-import com.hjaquaculture.common.utils.OrderSymbol
+import com.hjaquaculture.common.base.DeliveryMethod
+import com.hjaquaculture.common.base.OrderStatus
+import com.hjaquaculture.common.base.TradeSymbol
 
 /**
  * 订单概要领域模型（综合销售与采购）
  */
 data class CombinedOrder(
-    val symbol: OrderSymbol,
+    val symbol: TradeSymbol,
     val id: Long,
     val sn: String,
     val partnerId: Long,
@@ -34,8 +34,8 @@ data class CombinedOrder(
     /**
      * 业务类型标识判断
      */
-    val isSale: Boolean get() = symbol == OrderSymbol.SALE
-    val isPurchase: Boolean get() = symbol == OrderSymbol.PURCHASE
+    val isSale: Boolean get() = symbol == TradeSymbol.SALE
+    val isPurchase: Boolean get() = symbol == TradeSymbol.PURCHASE
 
     /**
      * 全局逾期判断
