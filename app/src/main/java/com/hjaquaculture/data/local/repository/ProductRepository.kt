@@ -1,7 +1,7 @@
 package com.hjaquaculture.data.local.repository
 
-import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
+import com.hjaquaculture.data.local.dao.ProductVarietyDao
 import com.hjaquaculture.data.local.entity.ProductEntity
 import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import jakarta.inject.Inject
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Singleton
 class ProductRepository @Inject constructor(
     private val productDao: ProductDao,
-    private val categoryDao: ProductCategoryDao
+    private val categoryDao: ProductVarietyDao
 ){
 
     // --- 商品 ---

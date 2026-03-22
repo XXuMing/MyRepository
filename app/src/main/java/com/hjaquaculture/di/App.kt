@@ -11,9 +11,9 @@ import com.hjaquaculture.data.local.dao.CombinedInvoiceDao
 import com.hjaquaculture.data.local.dao.CombinedOrderDao
 import com.hjaquaculture.data.local.dao.CombinedPeopleDao
 import com.hjaquaculture.data.local.dao.CustomerDao
-import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
 import com.hjaquaculture.data.local.dao.ProductPriceHistoryDao
+import com.hjaquaculture.data.local.dao.ProductVarietyDao
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao
@@ -64,7 +64,7 @@ class App : Application(){
     @Inject
     lateinit var productDao: ProductDao
     @Inject
-    lateinit var productCategoryDao: ProductCategoryDao
+    lateinit var productVarietyDao: ProductVarietyDao
     @Inject
     lateinit var productPriceHistoryDao: ProductPriceHistoryDao
     @Inject
@@ -144,10 +144,10 @@ class App : Application(){
             }
             Log.d("DB_Callback", "Supplier测试数据填充完毕")
         }
-        if(productCategoryDao.getCount() == 0) {
+        if(productVarietyDao.getCount() == 0) {
             for (i in 1..5) {
                 val productCategory = ProductVarietyEntity(name = "测试分类$i")
-                productCategoryDao.insert(productCategory)
+                productVarietyDao.insert(productCategory)
             }
             Log.d("DB_Callback", "ProductCategory测试数据填充完毕")
         }

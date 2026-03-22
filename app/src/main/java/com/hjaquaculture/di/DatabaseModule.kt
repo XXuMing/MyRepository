@@ -12,9 +12,9 @@ import com.hjaquaculture.data.local.dao.CombinedPeopleDao
 import com.hjaquaculture.data.local.dao.CustomerDao
 import com.hjaquaculture.data.local.dao.InventoryDao
 import com.hjaquaculture.data.local.dao.InventoryLogDao
-import com.hjaquaculture.data.local.dao.ProductCategoryDao
 import com.hjaquaculture.data.local.dao.ProductDao
 import com.hjaquaculture.data.local.dao.ProductPriceHistoryDao
+import com.hjaquaculture.data.local.dao.ProductVarietyDao
 import com.hjaquaculture.data.local.dao.PurchaseInvoiceDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderDao
 import com.hjaquaculture.data.local.dao.PurchaseOrderItemDao
@@ -84,7 +84,7 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideProductCategoryDao (db: LocalDatabase): ProductCategoryDao {
+    fun provideProductCategoryDao (db: LocalDatabase): ProductVarietyDao {
         return db.productCategoryDao()
     }
 

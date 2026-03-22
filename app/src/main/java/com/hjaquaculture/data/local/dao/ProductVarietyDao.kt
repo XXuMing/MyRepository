@@ -12,7 +12,7 @@ import com.hjaquaculture.data.local.entity.ProductVarietyEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ProductCategoryDao{
+interface ProductVarietyDao{
 
     // --- 增加 (Create) ---
 
